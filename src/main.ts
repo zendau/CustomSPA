@@ -1,4 +1,5 @@
 import "./style.css";
+import htmlParser from "./parser";
 
 type eventTypes = "click" | "input";
 type eventAction = [eventTypes, () => void];
@@ -65,3 +66,4 @@ function render(root: HTMLElement | null, vdome: IVDOMElement) {
 
 const appRoot = document.getElementById("app");
 render(appRoot, vDOME);
+htmlParser()
