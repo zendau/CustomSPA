@@ -1,18 +1,6 @@
 import "./style.css";
 import htmlParser from "./parser";
-
-type eventTypes = "click" | "input";
-type eventAction = [eventTypes, () => void];
-
-interface IVDOMElement {
-  value?: string;
-  id?: string;
-  class?: string[];
-  tag: string;
-  children?: IVDOMElement[];
-  dataset?: Record<string, any>;
-  events?: eventAction[];
-}
+import { IVDOMElement } from "./interfaces/IVDOMElement";
 
 function testEvent() {
   console.log("click test");
@@ -66,4 +54,5 @@ function render(root: HTMLElement | null, vdome: IVDOMElement) {
 
 const appRoot = document.getElementById("app");
 render(appRoot, vDOME);
-htmlParser()
+const resParse = htmlParser();
+console.log("resParse", resParse);

@@ -1,3 +1,5 @@
+import { IVDOMElement } from "./interfaces/IVDOMElement";
+
 const htmlExampleTest = `
 
 <h1 id="test" class='test'>About W3Schools</h1>
@@ -14,36 +16,55 @@ your browser will only display the first word from the title.
 </b></p>
 </div>
 
+<p data-id='qwe3'>test end</p>
 `;
 
-type eventTypes = "click" | "input";
-type eventAction = [eventTypes, () => void];
+const tags = htmlExampleTest.replaceAll("\n", "").split("<");
 
-interface IVDOMElement {
-  value?: string;
-  id?: string;
-  class?: string[];
-  tag: string;
-  children?: IVDOMElement[];
-  dataset?: Record<string, any>;
-  events?: eventAction[];
-}
+export default function htmlParser(startPos = 0, htmlTag?: string) {
+  const roomVDOM: IVDOMElement = {
+    tag: "",
+    children: [],
+  };
 
-export default function htmlParser() {
-  const tags = htmlExampleTest.replaceAll("\n", "").split("<");
+  for (let i = startPos; i < tags.length; i++) {
+    const vdome = <IVDOMElement>{};
+    let tag = tags[i];
 
-  const vdome: IVDOMElement = {};
+    if (!tag) continue;
 
-  for (let tag of tags) {
-    if (!tag || tag.charAt(0) === "/") continue;
+    const tagData = tag.split(">");
 
-    const temp = tag.split(">");
+    if (tagData[1]) {
+      vdome.value = tagData[1];
+    } else {
+      if (tag.charAt(0) !== "/") {
+        const startTag = tagData[0].split(" ")[0];
 
-    if (temp[1]) {
-      vdome.value = temp[1];
+        if (!vdome.children) {
+          vdome.children = [];
+        }
+
+        const childDom = htmlParser(i + 1, startTag);
+
+        if (childDom && "pos" in childDom && childDom.vdome.children) {
+          i = childDom.pos;
+          vdome.children.push(...childDom.vdome.children);
+        }
+      } else if (tag.charAt(0) === "/") {
+        tag = tag.slice(1, -1);
+
+        if (tag === htmlTag) {
+          return {
+            pos: i,
+            vdome: roomVDOM,
+          };
+        }
+        continue;
+      }
     }
 
-    let tagAtr = temp[0];
+    let tagAtr = tagData[0];
 
     const classRegex = /class=(?:["']\W+\s*(?:\w+)\()?["']([^'"]+)['"]/gim;
     const classAtr = tagAtr.match(classRegex);
@@ -59,26 +80,36 @@ export default function htmlParser() {
       tagAtr = tagAtr.replace(classAtr[0], "");
     }
 
-    console.log("after replace", tagAtr);
-
     const tagSlices = tagAtr.split(" ");
 
     vdome.tag = tagSlices[0];
 
     tagSlices.splice(0, 1);
 
-    console.log("tagSlices", tagSlices);
-
     for (let atr of tagSlices) {
       if (!atr) continue;
 
-      if (atr.includes("id=")) {
-        const id = atr.replace("id=", "").replace(/["']/g, "");
+      if (atr.includes("data-")) {
+        const dataValue = atr.replace("data-", "").split("=");
+        console.log("dataValue", dataValue);
 
-        console.log("id - ", id);
+        if (!vdome.dataset) {
+          vdome.dataset = {};
+        }
+
+        vdome.dataset[dataValue[0]] = dataValue[1].replace(/["']/g, "");
+        continue;
       }
 
-      console.log("atr", atr);
+      if (atr.includes("id=")) {
+        const id = atr.replace("id=", "").replace(/["']/g, "");
+        vdome.id = id;
+        continue;
+      }
     }
+
+    roomVDOM.children?.push(vdome);
   }
+
+  return roomVDOM;
 }
