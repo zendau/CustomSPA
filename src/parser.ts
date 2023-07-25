@@ -1,4 +1,4 @@
-import { IVDOMElement } from "./interfaces/IVDOMElement";
+import { IVDOMElement, eventTypes } from "./interfaces/IVDOMElement";
 
 const htmlExampleTest = `
 
@@ -16,10 +16,11 @@ your browser will only display the first word from the title.
 </b></p>
 </div>
 
-<p data-id='qwe3'>test end</p>
+<p data-id='qwe3' @click='testFn'>test end</p>
 `;
 
 const tags = htmlExampleTest.replaceAll("\n", "").split("<");
+const events: eventTypes[] = ["click", "input"];
 
 export default function htmlParser(startPos = 0, htmlTag?: string) {
   const roomVDOM: IVDOMElement = {
@@ -105,6 +106,24 @@ export default function htmlParser(startPos = 0, htmlTag?: string) {
         const id = atr.replace("id=", "").replace(/["']/g, "");
         vdome.id = id;
         continue;
+      }
+
+      if (atr.includes("@")) {
+        const atrValue = atr.split("=");
+        const eventType = atrValue[0].substring(1) as eventTypes;
+        const eventAction = atrValue[1].replace(/["']/g, "");
+
+        if (events.includes(eventType)) {
+          console.log("atr event", eventType, eventAction);
+
+          if (!vdome.events) {
+            vdome.events = {};
+          }
+
+          vdome.events[eventType] = eventAction;
+        } else {
+          console.error(`Unknown type ${eventType} on tag ${vdome.tag}`);
+        }
       }
     }
 

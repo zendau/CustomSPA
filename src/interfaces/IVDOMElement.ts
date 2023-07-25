@@ -1,5 +1,4 @@
 export type eventTypes = "click" | "input";
-type eventAction = [eventTypes, () => void];
 
 export interface IVDOMElement {
   value?: string;
@@ -8,5 +7,5 @@ export interface IVDOMElement {
   tag: string;
   children?: IVDOMElement[];
   dataset?: Record<string, any>;
-  events?: eventAction[];
+  events?: Partial<Record<eventTypes, string>>;
 }

@@ -6,6 +6,10 @@ function testEvent() {
   console.log("click test");
 }
 
+const componentData: Record<string, any> = {
+  testEvent,
+};
+
 const vDOME: IVDOMElement = {
   tag: "div",
   class: ["box"],
@@ -19,7 +23,7 @@ const vDOME: IVDOMElement = {
   dataset: {
     count: 5,
   },
-  events: [["click", testEvent]],
+  events: { click: "testEvent" },
 };
 
 function render(root: HTMLElement | null, vdome: IVDOMElement) {
@@ -44,8 +48,12 @@ function render(root: HTMLElement | null, vdome: IVDOMElement) {
   }
 
   if (vdome.events) {
-    vdome.events.forEach((event) => {
-      el.addEventListener(event[0], event[1]);
+    Object.entries(vdome.events).forEach(([event, action]) => {
+      if (!componentData[action]) {
+        console.error();
+      } else {
+        el.addEventListener(event, componentData[action]);
+      }
     });
   }
 
