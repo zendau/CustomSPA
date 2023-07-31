@@ -3,9 +3,12 @@ import { DataComponent } from "../../interfaces/componentData";
 
 export default function App(): DataComponent {
   const testRef = ref(2);
-  const testRef2 = reactivity({ number: { test: 2 } });
 
-  testRef2.number.test.toFixed();
+  // console.log('testRef', testRef)
+
+  // const testRef2 = reactivity({ number: { test: 2 } });
+
+  // testRef2.number.test.toFixed();
 
   const body = `
     <div>
@@ -15,11 +18,11 @@ export default function App(): DataComponent {
     </div>`;
 
   function testInc() {
-    testRef.value++;
+    // testRef.value++;
   }
 
   function testDec() {
-    testRef.value--;
+    // testRef.value--;
   }
 
   return [

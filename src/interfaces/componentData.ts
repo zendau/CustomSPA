@@ -1,2 +1,2 @@
-export type DataComponent = [string, object];
+export type DataComponent = [string, Record<string, any>];
 export type FnComponent = () => DataComponent;

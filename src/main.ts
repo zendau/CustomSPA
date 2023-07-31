@@ -5,10 +5,12 @@ import { reactiveProxy, reactiveNodes, reactivity } from "./core/reactivity";
 import { FnComponent } from "./interfaces/componentData";
 import App from "./app/components/App";
 import Parser from "./core/parser";
+import RenderVDOM from "./core/render";
 
 class SPA {
   private root!: HTMLElement;
   private parser!: Parser;
+  private render!: RenderVDOM;
 
   constructor(root: HTMLElement | null, mainComponent: FnComponent) {
     if (!root) return;
@@ -22,7 +24,9 @@ class SPA {
     const [template, script] = component();
     this.parser = new Parser(template);
 
-    const vdom = this.parser.genereteVDOM();
+    const vdom = this.parser.genereteVDOM() as IVDOMElement;
+    this.render = new RenderVDOM(script);
+    this.render.render(this.root, vdom);
 
     console.log("test", vdom, script);
   }

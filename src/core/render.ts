@@ -1,39 +1,72 @@
 import { IVDOMElement } from "../interfaces/IVDOMElement";
+import { reactiveNodes, reactiveProxy } from "./reactivity";
+import stringObjectFileds from "./utils/stringObjectFields";
 
-function run(component: any) {
+enum patchNode {
+  PATCH_VALUE = "PATCH_VALUE",
+  PATCH_CLASS = "PATCH_CLASS",
+  PATCH_STYLE = "PATCH_STYLE",
+}
 
+export default class RenderVDOM {
+  private componentScript!: Record<string, any>;
 
-  function render(root: HTMLElement | null, vdome: IVDOMElement) {
+  constructor(script: object) {
+    this.componentScript = script;
+  }
+
+  public render(root: HTMLElement | null, vdom: IVDOMElement) {
     if (!root) return;
 
-    const el = document.createElement(vdome.tag);
+    const el = document.createElement(vdom.tag);
 
-    if (vdome.id) {
-      el.id = vdome.id;
+    if (vdom.props.id) {
+      el.id = vdom.props.id;
     }
 
-    if (vdome.class) {
-      el.classList.add(...vdome.class);
+    if (vdom.props.class) {
+      el.classList.add(...vdom.props.class);
     }
 
-    if (vdome.value) {
-      el.innerText = vdome.value;
+    if (vdom.props.value) {
+      if (Array.isArray(vdom.props.value)) {
+        el.innerHTML = stringObjectFileds(
+          this.componentScript,
+          vdom.props.value[0]
+        );
+      } else {
+        el.innerText = vdom.props.value;
+      }
     }
 
-    if (vdome.children) {
-      vdome.children.forEach((child) => render(el, child));
+    if (vdom.children) {
+      vdom.children.forEach((child) => this.render(el, child));
     }
 
-    if (vdome.events) {
-      Object.entries(vdome.events).forEach(([event, action]) => {
-        if (!script[action]) {
-          console.error();
+    if (vdom.props.events) {
+      Object.entries(vdom.props.events).forEach(([event, action]) => {
+        if (!this.componentScript[action]) {
+          console.error(`not found script action ${action}}`);
         } else {
-          el.addEventListener(event, script[action]);
+          el.addEventListener(event, this.componentScript[action]);
         }
       });
     }
 
     root.appendChild(el);
+  }
+
+  public updateNodes(obj: any, value: any) {
+    const proxy = reactiveProxy.get(obj);
+    const nodes: any[] = reactiveNodes.get(proxy);
+    console.log("obj", obj, proxy, nodes);
+
+    if (!nodes) return;
+
+    nodes.forEach(([type, node]) => {
+      if (type === patchNode.PATCH_VALUE) {
+        node.textContent = value;
+      }
+    });
   }
 }

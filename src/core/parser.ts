@@ -87,7 +87,7 @@ export default class Parser {
 
   private HTMLParser(startPos = 0, htmlTag?: string) {
     const roomVDOM: IVDOMElement = {
-      tag: "",
+      tag: "div",
       children: [],
       props: {},
     };
