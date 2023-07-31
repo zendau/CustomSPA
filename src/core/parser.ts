@@ -1,4 +1,4 @@
-import { IVDOMElement, eventTypes } from "./interfaces/IVDOMElement";
+import { IVDOMElement, eventTypes } from "../interfaces/IVDOMElement";
 
 const htmlExampleTest = `
 
