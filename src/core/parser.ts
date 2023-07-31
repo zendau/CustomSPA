@@ -1,74 +1,36 @@
 import { IVDOMElement, eventTypes } from "../interfaces/IVDOMElement";
 
-const htmlExampleTest = `
+export default class Parser {
+  private events: eventTypes[] = ["click", "input"];
+  private HTMLBody!: string[];
 
-<h1 id="test" class='test'>About W3Schools</h1>
+  constructor(HTML: string) {
+    if (!HTML) return;
 
-<p class='box flex' title=About W3Schools>
-You cannot omit quotes around an attribute value
-if the value contains spaces.
-</p>
+    this.HTMLBody = HTML.replaceAll("\n", "")
+      .replaceAll(/ {2,}/g, "")
+      .split("<");
+  }
 
-<div class='container'>
-<p><b>
-If you move the mouse over the paragraph above,
-your browser will only display the first word from the title.
-</b></p>
-</div>
+  public genereteVDOM() {
+    return this.HTMLParser();
+  }
 
-<p data-id='qwe3' @click='testFn'>test end</p>
-`;
+  private getTagValue(tagData: string) {
+    if (!tagData) return;
 
-const tags = htmlExampleTest.replaceAll("\n", "").split("<");
-const events: eventTypes[] = ["click", "input"];
+    const reactiveRegex = /^{(.*)}$/;
+    const checkReactive = tagData.match(reactiveRegex);
 
-export default function htmlParser(startPos = 0, htmlTag?: string) {
-  const roomVDOM: IVDOMElement = {
-    tag: "",
-    children: [],
-  };
-
-  for (let i = startPos; i < tags.length; i++) {
-    const vdome = <IVDOMElement>{};
-    let tag = tags[i];
-
-    if (!tag) continue;
-
-    const tagData = tag.split(">");
-
-    if (tagData[1]) {
-      vdome.value = tagData[1];
-    } else {
-      if (tag.charAt(0) !== "/") {
-        const startTag = tagData[0].split(" ")[0];
-
-        if (!vdome.children) {
-          vdome.children = [];
-        }
-
-        const childDom = htmlParser(i + 1, startTag);
-
-        if (childDom && "pos" in childDom && childDom.vdome.children) {
-          i = childDom.pos;
-          vdome.children.push(...childDom.vdome.children);
-        }
-      } else if (tag.charAt(0) === "/") {
-        tag = tag.slice(1, -1);
-
-        if (tag === htmlTag) {
-          return {
-            pos: i,
-            vdome: roomVDOM,
-          };
-        }
-        continue;
-      }
+    if (checkReactive) {
+      return [checkReactive[1]];
     }
+    return tagData;
+  }
 
-    let tagAtr = tagData[0];
-
+  private getTagClass(tagData: string, vdom: IVDOMElement) {
     const classRegex = /class=(?:["']\W+\s*(?:\w+)\()?["']([^'"]+)['"]/gim;
-    const classAtr = tagAtr.match(classRegex);
+    const classAtr = tagData.match(classRegex);
 
     if (classAtr) {
       const classes = classAtr[0]
@@ -76,35 +38,32 @@ export default function htmlParser(startPos = 0, htmlTag?: string) {
         .replace(/["']/g, "")
         .split(" ");
 
-      vdome.class = classes;
+      tagData = tagData.replace(classAtr[0], "");
 
-      tagAtr = tagAtr.replace(classAtr[0], "");
+      vdom.props.class = classes;
     }
+    return tagData;
+  }
 
-    const tagSlices = tagAtr.split(" ");
-
-    vdome.tag = tagSlices[0];
-
-    tagSlices.splice(0, 1);
-
-    for (let atr of tagSlices) {
+  private getTagAttributes(tagsData: string[], vdom: IVDOMElement) {
+    for (let atr of tagsData) {
       if (!atr) continue;
 
       if (atr.includes("data-")) {
         const dataValue = atr.replace("data-", "").split("=");
         console.log("dataValue", dataValue);
 
-        if (!vdome.dataset) {
-          vdome.dataset = {};
+        if (!vdom.props.dataset) {
+          vdom.props.dataset = {};
         }
 
-        vdome.dataset[dataValue[0]] = dataValue[1].replace(/["']/g, "");
+        vdom.props.dataset[dataValue[0]] = dataValue[1].replace(/["']/g, "");
         continue;
       }
 
       if (atr.includes("id=")) {
         const id = atr.replace("id=", "").replace(/["']/g, "");
-        vdome.id = id;
+        vdom.props.id = id;
         continue;
       }
 
@@ -113,22 +72,82 @@ export default function htmlParser(startPos = 0, htmlTag?: string) {
         const eventType = atrValue[0].substring(1) as eventTypes;
         const eventAction = atrValue[1].replace(/["']/g, "");
 
-        if (events.includes(eventType)) {
-          console.log("atr event", eventType, eventAction);
-
-          if (!vdome.events) {
-            vdome.events = {};
+        if (this.events.includes(eventType)) {
+          if (!vdom.props.events) {
+            vdom.props.events = {};
           }
 
-          vdome.events[eventType] = eventAction;
+          vdom.props.events[eventType] = eventAction;
         } else {
-          console.error(`Unknown type ${eventType} on tag ${vdome.tag}`);
+          console.error(`Unknown type ${eventType} on tag ${vdom.tag}`);
         }
       }
     }
-
-    roomVDOM.children?.push(vdome);
   }
 
-  return roomVDOM;
+  private HTMLParser(startPos = 0, htmlTag?: string) {
+    const roomVDOM: IVDOMElement = {
+      tag: "",
+      children: [],
+      props: {},
+    };
+
+    for (let i = startPos; i < this.HTMLBody.length; i++) {
+      const vdom: IVDOMElement = {
+        tag: "",
+        children: [],
+        props: {},
+      };
+      let tag = this.HTMLBody[i];
+
+      if (!tag) continue;
+
+      const tagData = tag.split(">");
+
+      if (tagData[1]) {
+        vdom.props.value = this.getTagValue(tagData[1]);
+      } else {
+        if (tag.charAt(0) !== "/") {
+          const startTag = tagData[0].split(" ")[0];
+
+          if (!vdom.children) {
+            vdom.children = [];
+          }
+
+          const childDom = this.HTMLParser(i + 1, startTag);
+
+          if (childDom && "pos" in childDom && childDom.vdome.children) {
+            i = childDom.pos;
+            vdom.children.push(...childDom.vdome.children);
+          }
+        } else if (tag.charAt(0) === "/") {
+          tag = tag.slice(1, -1);
+
+          if (tag === htmlTag) {
+            return {
+              pos: i,
+              vdome: roomVDOM,
+            };
+          }
+          continue;
+        }
+      }
+
+      let tagAtr = tagData[0];
+
+      tagAtr = this.getTagClass(tagAtr, vdom);
+
+      const tagSlices = tagAtr.split(" ");
+
+      vdom.tag = tagSlices[0];
+
+      tagSlices.splice(0, 1);
+
+      this.getTagAttributes(tagSlices, vdom);
+
+      roomVDOM.children?.push(vdom);
+    }
+
+    return roomVDOM;
+  }
 }

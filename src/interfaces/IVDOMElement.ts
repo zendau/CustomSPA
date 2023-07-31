@@ -1,11 +1,15 @@
 export type eventTypes = "click" | "input";
 
-export interface IVDOMElement {
-  value?: string;
+interface IVDOMProps {
   id?: string;
   class?: string[];
-  tag: string;
-  children?: IVDOMElement[];
   dataset?: Record<string, any>;
   events?: Partial<Record<eventTypes, string>>;
+  value?: string | string[];
+}
+
+export interface IVDOMElement {
+  props: IVDOMProps;
+  tag: string;
+  children?: IVDOMElement[];
 }

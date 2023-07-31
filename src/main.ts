@@ -2,6 +2,35 @@ import "./style.css";
 import htmlParser from "./core/parser";
 import { IVDOMElement } from "./interfaces/IVDOMElement";
 import { reactiveProxy, reactiveNodes, reactivity } from "./core/reactivity";
+import { FnComponent } from "./interfaces/componentData";
+import App from "./app/components/App";
+import Parser from "./core/parser";
+
+class SPA {
+  private root!: HTMLElement;
+  private parser!: Parser;
+
+  constructor(root: HTMLElement | null, mainComponent: FnComponent) {
+    if (!root) return;
+
+    this.root = root;
+
+    this.mount(mainComponent);
+  }
+
+  private mount(component: FnComponent) {
+    const [template, script] = component();
+    this.parser = new Parser(template);
+
+    const vdom = this.parser.genereteVDOM();
+
+    console.log("test", vdom, script);
+  }
+}
+
+const appRoot = document.getElementById("app");
+
+const app = new SPA(appRoot, App);
 
 // function testEvent() {
 //   console.log("click test");
@@ -27,7 +56,6 @@ import { reactiveProxy, reactiveNodes, reactivity } from "./core/reactivity";
 //   events: { click: "testEvent" },
 // };
 
-// const appRoot = document.getElementById("app");
 // render(appRoot, vDOME);
 // const resParse = htmlParser();
 // console.log("resParse", resParse);

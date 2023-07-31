@@ -1,7 +1,7 @@
 import { IVDOMElement } from "../interfaces/IVDOMElement";
 
 function run(component: any) {
-  const [template, script] = component();
+
 
   function render(root: HTMLElement | null, vdome: IVDOMElement) {
     if (!root) return;
