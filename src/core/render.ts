@@ -1,6 +1,7 @@
 import { IVDOMElement } from "../interfaces/IVDOMElement";
+import { Emmiter } from "./Emitter";
 import { reactiveNodes, reactiveProxy } from "./reactivity";
-import stringObjectFileds from "./utils/stringObjectFields";
+import getObjectFromPath from "./utils/getObjectFromPath";
 
 enum patchNode {
   PATCH_VALUE = "PATCH_VALUE",
@@ -10,9 +11,14 @@ enum patchNode {
 
 export default class RenderVDOM {
   private componentScript!: Record<string, any>;
+  private emitter!: Emmiter;
 
-  constructor(script: object) {
+  constructor(script: Record<string, any>) {
     this.componentScript = script;
+
+    this.emitter = Emmiter.getInstance();
+
+    this.emitter.subscribe("render:update", this.updateNodes);
   }
 
   public render(root: HTMLElement | null, vdom: IVDOMElement) {
@@ -30,10 +36,18 @@ export default class RenderVDOM {
 
     if (vdom.props.value) {
       if (Array.isArray(vdom.props.value)) {
-        el.innerHTML = stringObjectFileds(
+        const reactiveData = getObjectFromPath(
           this.componentScript,
           vdom.props.value[0]
         );
+
+        const nodes = reactiveNodes.get(reactiveData);
+
+        if (nodes) {
+          nodes.push([patchNode.PATCH_VALUE, el]);
+        }
+
+        el.innerHTML = reactiveData;
       } else {
         el.innerText = vdom.props.value;
       }
@@ -59,7 +73,6 @@ export default class RenderVDOM {
   public updateNodes(obj: any, value: any) {
     const proxy = reactiveProxy.get(obj);
     const nodes: any[] = reactiveNodes.get(proxy);
-    console.log("obj", obj, proxy, nodes);
 
     if (!nodes) return;
 

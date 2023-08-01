@@ -1,4 +1,4 @@
-export default function stringObjectFileds(
+export default function getObjectFromPath(
   script: Record<string, any>,
   path: string
 ) {

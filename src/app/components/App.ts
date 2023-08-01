@@ -18,11 +18,11 @@ export default function App(): DataComponent {
     </div>`;
 
   function testInc() {
-    // testRef.value++;
+    testRef.value++;
   }
 
   function testDec() {
-    // testRef.value--;
+    testRef.value--;
   }
 
   return [

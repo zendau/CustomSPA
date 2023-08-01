@@ -1,14 +1,16 @@
-// import updateNodes from "./updateNode";
+import { Emmiter } from "./Emitter";
 
 export const reactiveNodes = new Map();
 export const reactiveProxy = new Map();
+
+const emitter = Emmiter.getInstance();
 
 function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
   const rootOjb = mainObj || obj;
 
   return new Proxy(obj, {
     set(target, key, value) {
-      // updateNodes(rootOjb, value);
+      emitter.emit("render:update", rootOjb, value);
       return Reflect.set(target, key, value);
     },
     get(target, key): any {
