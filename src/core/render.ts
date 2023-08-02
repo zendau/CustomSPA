@@ -11,6 +11,7 @@ enum patchNode {
 
 export default class RenderVDOM {
   private componentScript!: Record<string, any>;
+  private static isRenderSubscribe = false;
   private emitter!: Emmiter;
 
   constructor(script: Record<string, any>) {
@@ -18,13 +19,38 @@ export default class RenderVDOM {
 
     this.emitter = Emmiter.getInstance();
 
-    this.emitter.subscribe("render:update", this.updateNodes);
+    if (!RenderVDOM.isRenderSubscribe) {
+      this.emitter.subscribe("render:update", this.updateNodes);
+
+      RenderVDOM.isRenderSubscribe = true;
+    }
   }
 
   public render(root: HTMLElement | null, vdom: IVDOMElement) {
     if (!root) return;
 
-    const el = document.createElement(vdom.tag);
+    const isEmptyTag = !!vdom.tag;
+
+    const componentElementIndex = Object.keys(this.componentScript).indexOf(
+      vdom.tag
+    );
+    if (componentElementIndex !== -1) {
+      this.emitter.emit(
+        "app:setupComponent",
+        this.componentScript[vdom.tag],
+        root
+      );
+
+      return;
+    }
+
+    let el: HTMLElement;
+
+    if (isEmptyTag) {
+      el = document.createElement(vdom.tag);
+    } else {
+      el = root;
+    }
 
     if (vdom.props.id) {
       el.id = vdom.props.id;
@@ -66,8 +92,7 @@ export default class RenderVDOM {
         }
       });
     }
-
-    root.appendChild(el);
+    if (isEmptyTag) root.appendChild(el);
   }
 
   public updateNodes(obj: any, value: any) {

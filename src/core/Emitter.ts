@@ -1,10 +1,10 @@
 export class Emmiter {
   private static instance: Emmiter;
 
-  private events!: Map<string, (...args: any[]) => void>;
+  private events!: Map<string, (...args: any[]) => any>;
 
   constructor() {
-    this.events = new Map<string, (...args: any[]) => void>();
+    this.events = new Map<string, (...args: any[]) => any>();
   }
 
   public static getInstance(): Emmiter {
@@ -14,7 +14,10 @@ export class Emmiter {
     return Emmiter.instance;
   }
 
-  subscribe(event: string, fn: (...args: any[]) => void) {
+  subscribe(event: string, fn: (...args: any[]) => any) {
+
+    console.log('event', event)
+
     if (this.events.has(event)) {
       console.warn(`action ${event} is already declarated`);
       return;
@@ -30,13 +33,13 @@ export class Emmiter {
   }
 
   emit(event: string, ...args: any[]) {
-    console.log("emit", args);
+    console.log("emit", args, event, this.events);
     const fn = this.events.get(event);
 
     if (!fn) {
       console.log(`unknown event ${event}`);
     } else {
-      fn(...args);
+      return fn(...args);
     }
   }
 }

@@ -1,5 +1,6 @@
 import { reactivity, ref } from "../../core/reactivity";
 import { DataComponent } from "../../interfaces/componentData";
+import SecondComponent from "./SecondComponent";
 
 export default function App(): DataComponent {
   const testRef = ref(2);
@@ -15,6 +16,10 @@ export default function App(): DataComponent {
       <p class='box find'>{testRef}</p>
       <button id='test' @click='testInc'>Inc</button>
       <button @click='testDec'>Dec</button>
+      <input/>
+      <SecondComponent msg='hello' title='mmm'/>
+      <SecondComponent/>
+      <SecondComponent/>
     </div>`;
 
   function testInc() {
@@ -31,6 +36,7 @@ export default function App(): DataComponent {
       testRef,
       testInc,
       testDec,
+      SecondComponent,
     },
   ];
 }

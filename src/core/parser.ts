@@ -46,6 +46,8 @@ export default class Parser {
   }
 
   private getTagAttributes(tagsData: string[], vdom: IVDOMElement) {
+    console.log("tagsData", tagsData);
+
     for (let atr of tagsData) {
       if (!atr) continue;
 
@@ -82,12 +84,14 @@ export default class Parser {
           console.error(`Unknown type ${eventType} on tag ${vdom.tag}`);
         }
       }
+
+      console.log("atr", atr);
     }
   }
 
   private HTMLParser(startPos = 0, htmlTag?: string) {
     const roomVDOM: IVDOMElement = {
-      tag: "div",
+      tag: "",
       children: [],
       props: {},
     };
@@ -139,7 +143,15 @@ export default class Parser {
 
       const tagSlices = tagAtr.split(" ");
 
-      vdom.tag = tagSlices[0];
+      let tagName = tagSlices[0];
+
+      if (tagName.charAt(tagName.length - 1) === "/") {
+        tagName = tagName.substring(0, tagName.length - 1);
+      }
+
+      console.log("tagName", tagName, tagSlices);
+
+      vdom.tag = tagName;
 
       tagSlices.splice(0, 1);
 

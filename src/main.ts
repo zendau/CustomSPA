@@ -2,8 +2,8 @@ import "./style.css";
 import { IVDOMElement } from "./interfaces/IVDOMElement";
 import { FnComponent } from "./interfaces/componentData";
 import App from "./app/components/App";
-import Parser from "./core/parser";
-import RenderVDOM from "./core/render";
+import Parser from "./core/Parser";
+import RenderVDOM from "./core/Render";
 import { Emmiter } from "./core/Emitter";
 
 class SPA {
@@ -16,26 +16,32 @@ class SPA {
     if (!root) return;
 
     this.root = root;
-    this.emitter = new Emmiter();
+    this.emitter = Emmiter.getInstance();
+    this.emitter.subscribe(
+      "app:setupComponent",
+      this.setupComponent.bind(this)
+    );
 
     this.mount(mainComponent);
   }
 
-  private mount(component: FnComponent) {
+  private setupComponent(component: FnComponent, root: HTMLElement) {
     const [template, script] = component();
+
     this.parser = new Parser(template);
     this.render = new RenderVDOM(script);
-
     const vdom = this.parser.genereteVDOM() as IVDOMElement;
-    this.render.render(this.root, vdom);
+    this.render.render(root, vdom);
+  }
 
-    console.log("test", vdom, script);
+  private mount(component: FnComponent) {
+    this.setupComponent(component, this.root);
   }
 }
 
 const appRoot = document.getElementById("app");
 
-const app = new SPA(appRoot, App);
+new SPA(appRoot, App);
 
 // function testEvent() {
 //   console.log("click test");
