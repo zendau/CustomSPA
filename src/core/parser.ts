@@ -3,17 +3,29 @@ import { IVDOMElement, eventTypes } from "../interfaces/IVDOMElement";
 export default class Parser {
   private events: eventTypes[] = ["click", "input"];
   private HTMLBody!: string[];
+  private componentScript!: Record<string, any>;
 
-  constructor(HTML: string) {
+  constructor(HTML: string, script: Record<string, any>) {
     if (!HTML) return;
+
+    this.componentScript = script;
 
     this.HTMLBody = HTML.replaceAll("\n", "")
       .replaceAll(/ {2,}/g, "")
       .split("<");
+
+    console.log("HTML BODY", this.HTMLBody);
   }
 
   public genereteVDOM() {
     return this.HTMLParser();
+  }
+
+  private getTagType(tag: string) {
+    if (tag.charAt(tag.length - 1) === "/")
+      tag = tag.substring(0, tag.length - 1);
+
+    console.log("COMPONENT", tag);
   }
 
   private getTagValue(tagData: string) {
@@ -46,10 +58,12 @@ export default class Parser {
   }
 
   private getTagAttributes(tagsData: string[], vdom: IVDOMElement) {
-    console.log("tagsData", tagsData);
-
     for (let atr of tagsData) {
       if (!atr) continue;
+
+      if (atr.charAt(atr.length - 1) === "/") {
+        atr = atr.substring(0, atr.length - 1);
+      }
 
       if (atr.includes("data-")) {
         const dataValue = atr.replace("data-", "").split("=");
@@ -84,8 +98,7 @@ export default class Parser {
           console.error(`Unknown type ${eventType} on tag ${vdom.tag}`);
         }
       }
-
-      console.log("atr", atr);
+      console.log("===========atr", atr);
     }
   }
 
@@ -108,9 +121,14 @@ export default class Parser {
 
       const tagData = tag.split(">");
 
+      debugger;
+
       if (tagData[1]) {
         vdom.props.value = this.getTagValue(tagData[1]);
-      } else {
+      } else if (
+        tagData[0].charAt(tagData[0].length - 1) !== "/" ||
+        tagData[0] === "/"
+      ) {
         if (tag.charAt(0) !== "/") {
           const startTag = tagData[0].split(" ")[0];
 
@@ -149,8 +167,8 @@ export default class Parser {
         tagName = tagName.substring(0, tagName.length - 1);
       }
 
-      console.log("tagName", tagName, tagSlices);
-
+      this.getTagType(tagName);
+      console.log("o111", i, tag);
       vdom.tag = tagName;
 
       tagSlices.splice(0, 1);

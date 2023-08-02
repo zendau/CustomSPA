@@ -12,15 +12,14 @@ export default function App(): DataComponent {
   // testRef2.number.test.toFixed();
 
   const body = `
-    <div>
+    <>
       <p class='box find'>{testRef}</p>
       <button id='test' @click='testInc'>Inc</button>
       <button @click='testDec'>Dec</button>
-      <input/>
-      <SecondComponent msg='hello' title='mmm'/>
+      <input id='one' @input='testDec'/>
+      <input id='two' />
       <SecondComponent/>
-      <SecondComponent/>
-    </div>`;
+    </>`;
 
   function testInc() {
     testRef.value++;

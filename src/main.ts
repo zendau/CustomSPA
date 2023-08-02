@@ -28,7 +28,7 @@ class SPA {
   private setupComponent(component: FnComponent, root: HTMLElement) {
     const [template, script] = component();
 
-    this.parser = new Parser(template);
+    this.parser = new Parser(template, script);
     this.render = new RenderVDOM(script);
     const vdom = this.parser.genereteVDOM() as IVDOMElement;
     this.render.render(root, vdom);
