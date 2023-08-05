@@ -13,32 +13,13 @@ export default class Parser {
     this.HTMLBody = HTML.replaceAll("\n", "")
       .replaceAll(/ {2,}/g, "")
       .split("<");
-
-    console.log("HTML BODY", this.HTMLBody);
   }
 
   public genereteVDOM() {
     return this.HTMLParser();
   }
 
-  private getTagType(tag: string) {
-    if (tag.charAt(tag.length - 1) === "/")
-      tag = tag.substring(0, tag.length - 1);
 
-    console.log("COMPONENT", tag);
-  }
-
-  private getTagValue(tagData: string) {
-    if (!tagData) return;
-
-    const reactiveRegex = /^{(.*)}$/;
-    const checkReactive = tagData.match(reactiveRegex);
-
-    if (checkReactive) {
-      return [checkReactive[1]];
-    }
-    return tagData;
-  }
 
   private getTagClass(tagData: string, vdom: IVDOMElement) {
     const classRegex = /class=(?:["']\W+\s*(?:\w+)\()?["']([^'"]+)['"]/gim;
@@ -102,6 +83,40 @@ export default class Parser {
     }
   }
 
+  private getComponentProps(componentTag: string) {
+    if (!componentTag) return;
+
+    const regex = /(@\w+|\w+|:\w+)\s*=\s*['"]([^'"]+)['"]/g;
+
+    const componentData = componentTag.match(regex);
+
+    const res: Record<string, any> = {};
+
+    if (!componentData) return;
+
+    for (let item of componentData) {
+      let [key, value] = item.split("=");
+
+      value = value.replace(/["']/g, "");
+
+      if (key.charAt(0) === ":") {
+        const newKey = key.substring(1, key.length);
+
+        if (!this.componentScript[value]) {
+          console.error(`unknown props ${value} in ${componentTag}`);
+          return;
+        }
+
+        res[newKey] = this.componentScript[value];
+
+        continue;
+      }
+
+      res[key] = value;
+    }
+    return res;
+  }
+
   private HTMLParser(startPos = 0, htmlTag?: string) {
     const roomVDOM: IVDOMElement = {
       tag: "",
@@ -117,26 +132,41 @@ export default class Parser {
       };
       let tag = this.HTMLBody[i];
 
+      console.log("TAG", tag, i);
+
       if (!tag) continue;
 
       const tagData = tag.split(">");
 
-      debugger;
+      const tagPieces = tagData[0].split(" ");
+
+      const tagTitle = tagPieces.shift() as string;
+
+      vdom.tag = tagTitle;
+      if (Object.keys(this.componentScript).indexOf(tagTitle) !== -1) {
+        console.log("COMPONENT", tagTitle, tag);
+        const componentProps = this.getComponentProps(tag);
+        vdom.props.componentProps = componentProps;
+        roomVDOM.children?.push(vdom);
+        continue;
+      }
+
+      tagData[0] = tagPieces.join(" ");
 
       if (tagData[1]) {
-        vdom.props.value = this.getTagValue(tagData[1]);
+        vdom.props.value = tagData[1];
       } else if (
         tagData[0].charAt(tagData[0].length - 1) !== "/" ||
         tagData[0] === "/"
       ) {
         if (tag.charAt(0) !== "/") {
-          const startTag = tagData[0].split(" ")[0];
+          // const startTag = tagData[0].split(" ")[0];
 
           if (!vdom.children) {
             vdom.children = [];
           }
 
-          const childDom = this.HTMLParser(i + 1, startTag);
+          const childDom = this.HTMLParser(i + 1, tagTitle);
 
           if (childDom && "pos" in childDom && childDom.vdome.children) {
             i = childDom.pos;
@@ -161,17 +191,21 @@ export default class Parser {
 
       const tagSlices = tagAtr.split(" ");
 
-      let tagName = tagSlices[0];
+      // let tagName = tagSlices[0];
 
-      if (tagName.charAt(tagName.length - 1) === "/") {
-        tagName = tagName.substring(0, tagName.length - 1);
-      }
+      // if (tagName.charAt(tagName.length - 1) === "/") {
+      //   tagName = tagName.substring(0, tagName.length - 1);
+      // }
 
-      this.getTagType(tagName);
-      console.log("o111", i, tag);
-      vdom.tag = tagName;
+      // if (this.componentScript.indexOf(tagName) !== -1) {
+      //   console.log("COMPONENT", tag, vdom);
+      // }
 
-      tagSlices.splice(0, 1);
+      // this.getTagType(tagName);
+      // console.log("o111", i, tag);
+      // vdom.tag = tagName;
+
+      // tagSlices.splice(0, 1);
 
       this.getTagAttributes(tagSlices, vdom);
 

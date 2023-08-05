@@ -33,7 +33,7 @@ export class Emmiter {
   }
 
   emit(event: string, ...args: any[]) {
-    console.log("emit", args, event, this.events);
+    console.log("emit", args, event);
     const fn = this.events.get(event);
 
     if (!fn) {

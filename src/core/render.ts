@@ -20,10 +20,80 @@ export default class RenderVDOM {
     this.emitter = Emmiter.getInstance();
 
     if (!RenderVDOM.isRenderSubscribe) {
-      this.emitter.subscribe("render:update", this.updateNodes);
+      this.emitter.subscribe("render:update", this.updateNodes.bind(this));
 
       RenderVDOM.isRenderSubscribe = true;
     }
+  }
+
+  private getTagValue(tagData: string, el: HTMLElement) {
+    const reactiveRegex = /\{([^}]+)\}/g;
+
+    const checkSplite = tagData.split(reactiveRegex);
+
+    if (checkSplite.length === 1) {
+      const textNode = document.createTextNode(tagData);
+      el.appendChild(textNode);
+      return;
+    }
+
+    const checkReactive = tagData
+      .match(reactiveRegex)!
+      .map((item) => item.slice(1, -1));
+
+    for (const reactiveData of checkSplite) {
+      if (!reactiveData) continue;
+      let reactiveVariable = reactiveData;
+
+      const isReactive = checkReactive.indexOf(reactiveData);
+
+      if (isReactive !== -1) {
+        reactiveVariable = this.componentScript[reactiveData];
+      }
+
+      if (!reactiveVariable) {
+        console.error(`unknown reactive value ${reactiveData} in ${tagData}`);
+        return;
+      }
+      const textNode = document.createTextNode(reactiveVariable);
+
+      const nodes = reactiveNodes.get(reactiveVariable);
+
+      if (nodes) {
+        nodes.push([patchNode.PATCH_VALUE, textNode]);
+      }
+
+      // tagData = tagData.replace(reactiveData, reactiveProxy);
+
+      el.appendChild(textNode);
+    }
+    // const reactiveRegex = /\{([^}]+)\}/g;
+    // const checkReactive = tagData.match(reactiveRegex);
+
+    // if (!checkReactive) return tagData;
+
+    // checkReactive.forEach((reactiveData) => {
+    //   const reactiveVariable = reactiveData.slice(1, -1);
+
+    //   const reactiveProxy = this.componentScript[reactiveVariable];
+
+    //   if (!reactiveProxy) {
+    //     console.error(
+    //       `unknown reactive value ${reactiveVariable} in ${tagData}`
+    //     );
+    //     return;
+    //   }
+
+    //   const nodes = reactiveNodes.get(reactiveProxy);
+
+    //   if (nodes && el) {
+    //     nodes.push([patchNode.PATCH_VALUE, el, tagData, reactiveVariable]);
+    //   }
+
+    //   tagData = tagData.replace(reactiveData, reactiveProxy);
+    // });
+
+    // return tagData;
   }
 
   public render(root: HTMLElement | null, vdom: IVDOMElement) {
@@ -38,7 +108,8 @@ export default class RenderVDOM {
       this.emitter.emit(
         "app:setupComponent",
         this.componentScript[vdom.tag],
-        root
+        root,
+        vdom.props.componentProps
       );
 
       return;
@@ -61,22 +132,9 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.value) {
-      if (Array.isArray(vdom.props.value)) {
-        const reactiveData = getObjectFromPath(
-          this.componentScript,
-          vdom.props.value[0]
-        );
+      debugger;
 
-        const nodes = reactiveNodes.get(reactiveData);
-
-        if (nodes) {
-          nodes.push([patchNode.PATCH_VALUE, el]);
-        }
-
-        el.innerHTML = reactiveData;
-      } else {
-        el.innerText = vdom.props.value;
-      }
+      this.getTagValue(vdom.props.value, el);
     }
 
     if (vdom.children) {
@@ -99,11 +157,13 @@ export default class RenderVDOM {
     const proxy = reactiveProxy.get(obj);
     const nodes: any[] = reactiveNodes.get(proxy);
 
+    console.log("NODES", nodes);
+    debugger;
     if (!nodes) return;
 
-    nodes.forEach(([type, node]) => {
+    nodes.forEach(([type, node, oldValue]) => {
       if (type === patchNode.PATCH_VALUE) {
-        node.textContent = value;
+        node.data = value;
       }
     });
   }

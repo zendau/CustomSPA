@@ -1,8 +1,12 @@
 import { reactivity, ref } from "../../core/reactivity";
 import { DataComponent } from "../../interfaces/componentData";
 
-export default function SecondComponent(): DataComponent {
-  const testRef = ref(2);
+export default function SecondComponent({
+  id,
+}: Record<string, any>): DataComponent {
+  const testRef = ref('testQ');
+
+  console.log("=props", id);
 
   // console.log('testRef', testRef)
 
@@ -12,8 +16,8 @@ export default function SecondComponent(): DataComponent {
 
   const body = `
     <>
-      <h1>Hello from second component</h1>
+      <h1>Hello from second component {id} and {testRef}</h1>
     </>`;
 
-  return [body, {}];
+  return [body, { id, testRef }];
 }

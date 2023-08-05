@@ -7,7 +7,7 @@ interface IVDOMProps {
   class?: string[];
   dataset?: Record<string, any>;
   events?: Partial<Record<eventTypes, string>>;
-  value?: string | string[];
+  value?: string;
   componentProps?: IComponentProps;
 }
 

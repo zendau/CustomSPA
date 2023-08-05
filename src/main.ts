@@ -25,8 +25,12 @@ class SPA {
     this.mount(mainComponent);
   }
 
-  private setupComponent(component: FnComponent, root: HTMLElement) {
-    const [template, script] = component();
+  private setupComponent(
+    component: FnComponent,
+    root: HTMLElement,
+    props?: Record<string, any>
+  ) {
+    const [template, script] = component(props);
 
     this.parser = new Parser(template, script);
     this.render = new RenderVDOM(script);
@@ -41,7 +45,7 @@ class SPA {
 
 const appRoot = document.getElementById("app");
 
-new SPA(appRoot, App);
+new SPA(appRoot, App as any);
 
 // function testEvent() {
 //   console.log("click test");

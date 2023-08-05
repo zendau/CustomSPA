@@ -14,11 +14,13 @@ export default function App(): DataComponent {
   const body = `
     <>
       <p class='box find'>{testRef}</p>
-      <button id='test' @click='testInc'>Inc</button>
-      <button @click='testDec'>Dec</button>
+      <div>
+        <button id='test' @click='testInc'>Inc</button>
+        <button @click='testDec'>Dec</button>
+      </div>
       <input id='one' @input='testDec'/>
       <input id='two' />
-      <SecondComponent/>
+      <SecondComponent msg='test message' :id='testRef'/>
     </>`;
 
   function testInc() {
