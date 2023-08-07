@@ -1,7 +1,8 @@
-import { Emmiter } from "./Emitter";
+import { Emmiter } from "@core/Emitter";
+import { reactiveNode } from "@core/interfaces/typeNodes";
 
-export const reactiveNodes = new Map();
-export const reactiveProxy = new Map();
+export const reactiveNodes = new Map<object, reactiveNode[]>();
+export const reactiveProxy = new Map<object, object>();
 
 const emitter = Emmiter.getInstance();
 

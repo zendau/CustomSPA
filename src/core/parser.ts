@@ -1,14 +1,15 @@
-import { IVDOMElement, eventTypes } from "../interfaces/IVDOMElement";
+import { IVDOMElement, eventTypes } from "@core/interfaces/IVDOMElement";
+import { IComponent } from "@core/interfaces/componentType";
 
 export default class Parser {
   private events: eventTypes[] = ["click", "input"];
   private HTMLBody!: string[];
-  private componentScript!: Record<string, any>;
+  private componentProps!: Partial<IComponent>;
 
-  constructor(HTML: string, script: Record<string, any>) {
-    if (!HTML) return;
+  constructor(HTML: string, componentProps?: Partial<IComponent>) {
+    if (!HTML || !componentProps) return;
 
-    this.componentScript = script;
+    this.componentProps = componentProps;
 
     this.HTMLBody = HTML.replaceAll("\n", "")
       .replaceAll(/ {2,}/g, "")
@@ -18,8 +19,6 @@ export default class Parser {
   public genereteVDOM() {
     return this.HTMLParser();
   }
-
-
 
   private getTagClass(tagData: string, vdom: IVDOMElement) {
     const classRegex = /class=(?:["']\W+\s*(?:\w+)\()?["']([^'"]+)['"]/gim;
@@ -79,7 +78,6 @@ export default class Parser {
           console.error(`Unknown type ${eventType} on tag ${vdom.tag}`);
         }
       }
-      console.log("===========atr", atr);
     }
   }
 
@@ -90,7 +88,7 @@ export default class Parser {
 
     const componentData = componentTag.match(regex);
 
-    const res: Record<string, any> = {};
+    const res: Record<string, object | string> = {};
 
     if (!componentData) return;
 
@@ -102,12 +100,12 @@ export default class Parser {
       if (key.charAt(0) === ":") {
         const newKey = key.substring(1, key.length);
 
-        if (!this.componentScript[value]) {
+        if (!this.componentProps?.data || !this.componentProps.data[value]) {
           console.error(`unknown props ${value} in ${componentTag}`);
           return;
         }
 
-        res[newKey] = this.componentScript[value];
+        res[newKey] = this.componentProps.data[value];
 
         continue;
       }
@@ -143,8 +141,10 @@ export default class Parser {
       const tagTitle = tagPieces.shift() as string;
 
       vdom.tag = tagTitle;
-      if (Object.keys(this.componentScript).indexOf(tagTitle) !== -1) {
-        console.log("COMPONENT", tagTitle, tag);
+      if (
+        this.componentProps?.components &&
+        Object.keys(this.componentProps.components).indexOf(tagTitle) !== -1
+      ) {
         const componentProps = this.getComponentProps(tag);
         vdom.props.componentProps = componentProps;
         roomVDOM.children?.push(vdom);
@@ -160,8 +160,6 @@ export default class Parser {
         tagData[0] === "/"
       ) {
         if (tag.charAt(0) !== "/") {
-          // const startTag = tagData[0].split(" ")[0];
-
           if (!vdom.children) {
             vdom.children = [];
           }
@@ -190,22 +188,6 @@ export default class Parser {
       tagAtr = this.getTagClass(tagAtr, vdom);
 
       const tagSlices = tagAtr.split(" ");
-
-      // let tagName = tagSlices[0];
-
-      // if (tagName.charAt(tagName.length - 1) === "/") {
-      //   tagName = tagName.substring(0, tagName.length - 1);
-      // }
-
-      // if (this.componentScript.indexOf(tagName) !== -1) {
-      //   console.log("COMPONENT", tag, vdom);
-      // }
-
-      // this.getTagType(tagName);
-      // console.log("o111", i, tag);
-      // vdom.tag = tagName;
-
-      // tagSlices.splice(0, 1);
 
       this.getTagAttributes(tagSlices, vdom);
 

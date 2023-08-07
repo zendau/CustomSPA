@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES6",
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
+    "baseUrl": "./src", // Опционально, указывает базовую директорию для алиасов
+    "paths": {
+      "@app/*": ["./app/*"],
+      "@SPA": ["./core/index"],
+      "@core/*": ["./core/*"],
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

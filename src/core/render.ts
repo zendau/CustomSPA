@@ -1,21 +1,16 @@
-import { IVDOMElement } from "../interfaces/IVDOMElement";
-import { Emmiter } from "./Emitter";
-import { reactiveNodes, reactiveProxy } from "./reactivity";
-import getObjectFromPath from "./utils/getObjectFromPath";
-
-enum patchNode {
-  PATCH_VALUE = "PATCH_VALUE",
-  PATCH_CLASS = "PATCH_CLASS",
-  PATCH_STYLE = "PATCH_STYLE",
-}
+import { IVDOMElement } from "@core/interfaces/IVDOMElement";
+import { Emmiter } from "@core/Emitter";
+import { reactiveNodes, reactiveProxy } from "@core/reactivity";
+import { patchNode } from "@core/interfaces/typeNodes";
+import { IComponent } from "@core/interfaces/componentType";
 
 export default class RenderVDOM {
-  private componentScript!: Record<string, any>;
+  private componentProps?: Partial<IComponent>;
   private static isRenderSubscribe = false;
   private emitter!: Emmiter;
 
-  constructor(script: Record<string, any>) {
-    this.componentScript = script;
+  constructor(componentProps?: Partial<IComponent>) {
+    this.componentProps = componentProps;
 
     this.emitter = Emmiter.getInstance();
 
@@ -29,9 +24,9 @@ export default class RenderVDOM {
   private getTagValue(tagData: string, el: HTMLElement) {
     const reactiveRegex = /\{([^}]+)\}/g;
 
-    const checkSplite = tagData.split(reactiveRegex);
+    const checkSplit = tagData.split(reactiveRegex);
 
-    if (checkSplite.length === 1) {
+    if (checkSplit.length === 1) {
       const textNode = document.createTextNode(tagData);
       el.appendChild(textNode);
       return;
@@ -41,14 +36,15 @@ export default class RenderVDOM {
       .match(reactiveRegex)!
       .map((item) => item.slice(1, -1));
 
-    for (const reactiveData of checkSplite) {
+    for (const reactiveData of checkSplit) {
       if (!reactiveData) continue;
       let reactiveVariable = reactiveData;
 
+      debugger;
       const isReactive = checkReactive.indexOf(reactiveData);
 
-      if (isReactive !== -1) {
-        reactiveVariable = this.componentScript[reactiveData];
+      if (this.componentProps?.data && isReactive !== -1) {
+        reactiveVariable = this.componentProps.data[reactiveData];
       }
 
       if (!reactiveVariable) {
@@ -57,43 +53,14 @@ export default class RenderVDOM {
       }
       const textNode = document.createTextNode(reactiveVariable);
 
-      const nodes = reactiveNodes.get(reactiveVariable);
+      const nodes = reactiveNodes.get(reactiveVariable as unknown as object);
 
       if (nodes) {
         nodes.push([patchNode.PATCH_VALUE, textNode]);
       }
 
-      // tagData = tagData.replace(reactiveData, reactiveProxy);
-
       el.appendChild(textNode);
     }
-    // const reactiveRegex = /\{([^}]+)\}/g;
-    // const checkReactive = tagData.match(reactiveRegex);
-
-    // if (!checkReactive) return tagData;
-
-    // checkReactive.forEach((reactiveData) => {
-    //   const reactiveVariable = reactiveData.slice(1, -1);
-
-    //   const reactiveProxy = this.componentScript[reactiveVariable];
-
-    //   if (!reactiveProxy) {
-    //     console.error(
-    //       `unknown reactive value ${reactiveVariable} in ${tagData}`
-    //     );
-    //     return;
-    //   }
-
-    //   const nodes = reactiveNodes.get(reactiveProxy);
-
-    //   if (nodes && el) {
-    //     nodes.push([patchNode.PATCH_VALUE, el, tagData, reactiveVariable]);
-    //   }
-
-    //   tagData = tagData.replace(reactiveData, reactiveProxy);
-    // });
-
-    // return tagData;
   }
 
   public render(root: HTMLElement | null, vdom: IVDOMElement) {
@@ -101,18 +68,20 @@ export default class RenderVDOM {
 
     const isEmptyTag = !!vdom.tag;
 
-    const componentElementIndex = Object.keys(this.componentScript).indexOf(
-      vdom.tag
-    );
-    if (componentElementIndex !== -1) {
-      this.emitter.emit(
-        "app:setupComponent",
-        this.componentScript[vdom.tag],
-        root,
-        vdom.props.componentProps
-      );
+    if (this.componentProps?.components) {
+      const componentElementIndex = Object.keys(
+        this.componentProps.components
+      ).indexOf(vdom.tag);
+      if (componentElementIndex !== -1) {
+        this.emitter.emit(
+          "app:setupComponent",
+          this.componentProps?.components[vdom.tag],
+          root,
+          vdom.props.componentProps
+        );
 
-      return;
+        return;
+      }
     }
 
     let el: HTMLElement;
@@ -132,8 +101,6 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.value) {
-      debugger;
-
       this.getTagValue(vdom.props.value, el);
     }
 
@@ -141,12 +108,12 @@ export default class RenderVDOM {
       vdom.children.forEach((child) => this.render(el, child));
     }
 
-    if (vdom.props.events) {
+    if (vdom.props.events && this.componentProps?.data) {
       Object.entries(vdom.props.events).forEach(([event, action]) => {
-        if (!this.componentScript[action]) {
+        if (!this.componentProps!.data![action]) {
           console.error(`not found script action ${action}}`);
         } else {
-          el.addEventListener(event, this.componentScript[action]);
+          el.addEventListener(event, this.componentProps!.data![action]);
         }
       });
     }
@@ -155,13 +122,17 @@ export default class RenderVDOM {
 
   public updateNodes(obj: any, value: any) {
     const proxy = reactiveProxy.get(obj);
-    const nodes: any[] = reactiveNodes.get(proxy);
 
-    console.log("NODES", nodes);
-    debugger;
+    if (!proxy) {
+      console.error(`proxy object not found ${obj}`);
+      return;
+    }
+
+    const nodes = reactiveNodes.get(proxy);
+
     if (!nodes) return;
 
-    nodes.forEach(([type, node, oldValue]) => {
+    nodes.forEach(([type, node]) => {
       if (type === patchNode.PATCH_VALUE) {
         node.data = value;
       }
