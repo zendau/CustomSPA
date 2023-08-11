@@ -2,12 +2,17 @@ import { reactivity, ref } from "@SPA";
 import { FnComponent } from "@core/interfaces/componentType";
 import SecondComponent from "@app/components/SecondComponent";
 
-const App: FnComponent<{}> = () => {
+const App: FnComponent = () => {
   const testRef = ref(2);
+  const testIf = ref(true);
 
   // console.log('testRef', testRef)
 
   // const testRef2 = reactivity({ number: { test: 2 } });
+
+  function changeIf() {
+    testIf.value = !testIf.value;
+  }
 
   const body = `
     <>
@@ -18,7 +23,8 @@ const App: FnComponent<{}> = () => {
       </div>
       <input id='one' @input='testDec'/>
       <input id='two' />
-      <SecondComponent msg='test message' :id='testRef'/>
+      <button @click='changeIf'>Test if</button>
+      <SecondComponent if='testIf' msg='test message' :id='testRef'/>
     </>`;
 
   function testInc() {
@@ -34,7 +40,9 @@ const App: FnComponent<{}> = () => {
     {
       components: { SecondComponent },
       data: {
+        testIf,
         testRef,
+        changeIf,
         testInc,
         testDec,
       },

@@ -4,10 +4,10 @@ import { IComponent } from "@core/interfaces/componentType";
 export default class Parser {
   private events: eventTypes[] = ["click", "input"];
   private HTMLBody!: string[];
-  private componentProps!: Partial<IComponent>;
+  private componentProps?: Partial<IComponent>;
 
   constructor(HTML: string, componentProps?: Partial<IComponent>) {
-    if (!HTML || !componentProps) return;
+    if (!HTML) return;
 
     this.componentProps = componentProps;
 
@@ -81,19 +81,28 @@ export default class Parser {
     }
   }
 
-  private getComponentProps(componentTag: string) {
+  private getComponentProps(componentTag: string, vdom: IVDOMElement) {
     if (!componentTag) return;
 
     const regex = /(@\w+|\w+|:\w+)\s*=\s*['"]([^'"]+)['"]/g;
 
     const componentData = componentTag.match(regex);
 
-    const res: Record<string, object | string> = {};
-
     if (!componentData) return;
 
+    vdom.props.componentProps = {};
+
     for (let item of componentData) {
+      console.log("item component", item);
+
       let [key, value] = item.split("=");
+
+      if (key === "if") {
+        console.log("IF", value);
+        value = value.replace(/["']/g, "");
+        vdom.props.if = value;
+        continue;
+      }
 
       value = value.replace(/["']/g, "");
 
@@ -105,14 +114,13 @@ export default class Parser {
           return;
         }
 
-        res[newKey] = this.componentProps.data[value];
+        vdom.props.componentProps[newKey] = this.componentProps.data[value];
 
         continue;
       }
 
-      res[key] = value;
+      vdom.props.componentProps[key] = value;
     }
-    return res;
   }
 
   private HTMLParser(startPos = 0, htmlTag?: string) {
@@ -145,8 +153,7 @@ export default class Parser {
         this.componentProps?.components &&
         Object.keys(this.componentProps.components).indexOf(tagTitle) !== -1
       ) {
-        const componentProps = this.getComponentProps(tag);
-        vdom.props.componentProps = componentProps;
+        this.getComponentProps(tag, vdom);
         roomVDOM.children?.push(vdom);
         continue;
       }

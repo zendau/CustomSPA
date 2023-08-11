@@ -14,11 +14,11 @@ export default class RenderVDOM {
 
     this.emitter = Emmiter.getInstance();
 
-    if (!RenderVDOM.isRenderSubscribe) {
-      this.emitter.subscribe("render:update", this.updateNodes.bind(this));
+    // if (!RenderVDOM.isRenderSubscribe) {
+    //   this.emitter.subscribe("render:update", this.updateNodes.bind(this));
 
-      RenderVDOM.isRenderSubscribe = true;
-    }
+    //   RenderVDOM.isRenderSubscribe = true;
+    // }
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
@@ -40,7 +40,6 @@ export default class RenderVDOM {
       if (!reactiveData) continue;
       let reactiveVariable = reactiveData;
 
-      debugger;
       const isReactive = checkReactive.indexOf(reactiveData);
 
       if (this.componentProps?.data && isReactive !== -1) {
@@ -66,13 +65,26 @@ export default class RenderVDOM {
   public render(root: HTMLElement | null, vdom: IVDOMElement) {
     if (!root) return;
 
-    const isEmptyTag = !!vdom.tag;
+    const isEmptyTag = !vdom.tag;
 
     if (this.componentProps?.components) {
       const componentElementIndex = Object.keys(
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
+        console.log("ee", vdom.tag, vdom.props.if, this.componentProps);
+
+        const ifReactive =
+          vdom.props.if !== undefined
+            ? this.componentProps.data![vdom.props.if]
+            : undefined;
+
+        let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
+
+        if (ifNodes) ifNodes.push([patchNode.PATCH_IF, vdom.tag]);
+
+        if (ifReactive?._isRef === true && ifReactive?.value === false) return;
+
         this.emitter.emit(
           "app:setupComponent",
           this.componentProps?.components[vdom.tag],
@@ -86,8 +98,9 @@ export default class RenderVDOM {
 
     let el: HTMLElement;
 
-    if (isEmptyTag) {
+    if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
+      vdom.el = el;
     } else {
       el = root;
     }
@@ -117,25 +130,7 @@ export default class RenderVDOM {
         }
       });
     }
-    if (isEmptyTag) root.appendChild(el);
-  }
 
-  public updateNodes(obj: any, value: any) {
-    const proxy = reactiveProxy.get(obj);
-
-    if (!proxy) {
-      console.error(`proxy object not found ${obj}`);
-      return;
-    }
-
-    const nodes = reactiveNodes.get(proxy);
-
-    if (!nodes) return;
-
-    nodes.forEach(([type, node]) => {
-      if (type === patchNode.PATCH_VALUE) {
-        node.data = value;
-      }
-    });
+    if (!isEmptyTag) root.appendChild(el);
   }
 }
