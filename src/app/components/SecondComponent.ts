@@ -20,7 +20,14 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
 
   return [
     body,
-    { data: { id: test.id, testRef }, components: { ThirdComponent } },
+    {
+      data: { id: test.id, testRef },
+      components: { ThirdComponent },
+
+      onUnmounted: () => console.log("UNMOUNTED SECODND"),
+      onMounted: () => console.log("MOUNTED SECODND"),
+      onBeforeMounted: () => console.log("ON BEFORE MOUNTE SECOND"),
+    },
   ];
 };
 

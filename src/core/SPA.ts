@@ -36,17 +36,35 @@ export default class SPA {
     componentProps?: ComponentProps
   ) {
     const [template, props] = component(componentProps);
+    const componentName = component.name;
+
+    if (props.onBeforeMounted) {
+      props.onBeforeMounted();
+    }
 
     const parser = new Parser(template, props);
-    const render = new RenderVDOM(props);
+    const render = new RenderVDOM(componentName, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
     render.render(root, vdom);
 
-    SPA.components.set(component.name, {
+    if (props.onMounted) {
+      props.onMounted();
+    }
+
+    SPA.components.set(componentName, {
       vdom,
+      onUpdate: props.onUpdate,
+      onBeforeUpdate: props.onBeforeUpdate,
+      onUnmounted: props.onUnmounted,
       rerender: () => {
+        if (props.onBeforeMounted) {
+          props.onBeforeMounted();
+        }
         render.render(root, vdom);
+        if (props.onMounted) {
+          props.onMounted();
+        }
       },
     });
 
@@ -86,13 +104,24 @@ export default class SPA {
           node.el.remove();
         } else {
           if (SPA.components.has(node.tag)) {
-            clear(SPA.components.get(node.tag).vdom.children[0].children);
+            const component = SPA.components.get(node.tag);
+            clear(component.vdom.children[0].children);
+
+            if (component.onUnmounted) {
+              component.onUnmounted();
+            }
           }
         }
       });
     }
 
-    nodes.forEach(([type, node]) => {
+    nodes.forEach(([type, node, componentName]) => {
+      const updatedComponent = SPA.components.get(componentName);
+
+      if (updatedComponent.onBeforeUpdate) {
+        updatedComponent.onBeforeUpdate();
+      }
+
       if (type === patchNode.PATCH_VALUE && node instanceof Text) {
         node.data = value;
       } else if (type === patchNode.PATCH_IF) {
@@ -100,8 +129,16 @@ export default class SPA {
           console.log("ADD");
           SPA.components.get(node).rerender();
         } else {
+          const component = SPA.components.get(node);
           clear(SPA.components.get(node).vdom.children[0].children);
+          if (component.onUnmounted) {
+            component.onUnmounted();
+          }
         }
+      }
+
+      if (updatedComponent.onUpdate) {
+        updatedComponent.onUpdate();
       }
     });
   }

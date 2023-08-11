@@ -8,9 +8,11 @@ export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private static isRenderSubscribe = false;
   private emitter!: Emmiter;
+  private componentName!: string;
 
-  constructor(componentProps?: Partial<IComponent>) {
+  constructor(componentName: string, componentProps?: Partial<IComponent>) {
     this.componentProps = componentProps;
+    this.componentName = componentName;
 
     this.emitter = Emmiter.getInstance();
 
@@ -55,7 +57,7 @@ export default class RenderVDOM {
       const nodes = reactiveNodes.get(reactiveVariable as unknown as object);
 
       if (nodes) {
-        nodes.push([patchNode.PATCH_VALUE, textNode]);
+        nodes.push([patchNode.PATCH_VALUE, textNode, this.componentName]);
       }
 
       el.appendChild(textNode);
@@ -81,7 +83,8 @@ export default class RenderVDOM {
 
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
-        if (ifNodes) ifNodes.push([patchNode.PATCH_IF, vdom.tag]);
+        if (ifNodes)
+          ifNodes.push([patchNode.PATCH_IF, vdom.tag, this.componentName]);
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
 

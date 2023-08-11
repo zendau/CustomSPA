@@ -11,7 +11,14 @@ const ThirdComponent = () => {
       </main>
     </>`;
 
-  return [body];
+  return [
+    body,
+    {
+      onUnmounted: () => console.log('UNMOUNTED THIRD'),
+      onMounted: () => console.log("MOUNTED THIRD"),
+      onBeforeMounted: () => console.log("ON BEFORE MOUNTE THIRD"),
+    },
+  ];
 };
 
 export default ThirdComponent;

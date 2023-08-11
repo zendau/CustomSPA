@@ -46,6 +46,8 @@ const App: FnComponent = () => {
         testInc,
         testDec,
       },
+      onBeforeUpdate: () => console.log("BEFORE UPDATE APP"),
+      onUpdate: () => console.log("UPDATE APP"),
     },
   ];
 };
