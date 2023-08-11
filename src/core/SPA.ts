@@ -1,21 +1,19 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import {
-  ComponentData,
   ComponentProps,
   FnComponent,
+  ICreatedComponent,
 } from "@core/interfaces/componentType";
 import Parser from "@core/Parser";
 import RenderVDOM from "@core/Render";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes, reactiveProxy } from "./reactivity";
-import { patchNode } from "./interfaces/typeNodes";
+import { PatchNodeType } from "./interfaces/typeNodes";
 
 export default class SPA {
   private root!: HTMLElement;
-  private parser!: Parser;
-  private render!: RenderVDOM;
   private emitter!: Emmiter;
-  private static components = new Map();
+  private static components = new Map<string, ICreatedComponent>();
 
   constructor(root: HTMLElement | null, mainComponent: FnComponent) {
     if (!root) return;
@@ -67,26 +65,9 @@ export default class SPA {
         }
       },
     });
-
-    // console.log("THIS");
-
-    // function handleElementRemoval(mutationsList: any, observer: any) {
-    //   console.log("mutationsList", observer, mutationsList, root);
-    //   mutationsList.forEach((mutation: any) => {
-    //     if (mutation.type === "childList" && mutation.removedNodes.length > 0) {
-    //       // Здесь можно выполнить нужные действия при удалении элемента
-    //       console.log("DOM-элемент был удален:", mutation.removedNodes[0]);
-    //     }
-    //   });
-    // }
-    // const observer = new MutationObserver(handleElementRemoval);
-
-    // // Наблюдаем за изменениями в DOM-дереве
-    // const options = { childList: true, subtree: true };
-    // observer.observe(root, options);
   }
 
-  public static updateNodes(obj: any, value: any) {
+  public static updateNodes(obj: object, value: any) {
     const proxy = reactiveProxy.get(obj);
 
     if (!proxy) {
@@ -98,53 +79,71 @@ export default class SPA {
 
     if (!nodes) return;
 
-    function clear(nodes: any) {
-      nodes.forEach((node: any) => {
-        if (node.el) {
-          node.el.remove();
-        } else {
-          if (SPA.components.has(node.tag)) {
-            const component = SPA.components.get(node.tag);
-            clear(component.vdom.children[0].children);
-
-            if (component.onUnmounted) {
-              component.onUnmounted();
-            }
-          }
-        }
-      });
-    }
-
     nodes.forEach(([type, node, componentName]) => {
       const updatedComponent = SPA.components.get(componentName);
 
-      if (updatedComponent.onBeforeUpdate) {
+      if (updatedComponent?.onBeforeUpdate) {
         updatedComponent.onBeforeUpdate();
       }
 
-      if (type === patchNode.PATCH_VALUE && node instanceof Text) {
+      if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
         node.data = value;
-      } else if (type === patchNode.PATCH_IF) {
+      } else if (type === PatchNodeType.PATCH_IF) {
+        if (!node && typeof node !== "string") {
+          console.error(
+            `component name - ${node} is not valid. Must be string value`
+          );
+          return;
+        }
+        const component = SPA.components.get(node as string);
+
+        if (!component) {
+          console.error(`component - ${node} is not found`);
+          return;
+        }
+
         if (value) {
-          console.log("ADD");
-          SPA.components.get(node).rerender();
+          component.rerender();
         } else {
-          const component = SPA.components.get(node);
-          clear(SPA.components.get(node).vdom.children[0].children);
+          clearNodes(component.vdom.children![0].children);
           if (component.onUnmounted) {
             component.onUnmounted();
           }
         }
       }
 
-      if (updatedComponent.onUpdate) {
+      if (updatedComponent?.onUpdate) {
         updatedComponent.onUpdate();
+      }
+
+      function clearNodes(nodes?: IVDOMElement[]) {
+        if (!nodes) return;
+
+        nodes.forEach((node) => {
+          if (node.el) {
+            node.el.remove();
+          } else {
+            if (SPA.components.has(node.tag)) {
+              const component = SPA.components.get(node.tag);
+
+              if (!component) {
+                console.error(`component - ${node} is not found`);
+                return;
+              }
+
+              clearNodes(component.vdom.children![0].children);
+
+              if (component.onUnmounted) {
+                component.onUnmounted();
+              }
+            }
+          }
+        });
       }
     });
   }
 
   private mount(component: FnComponent) {
-    const nodes = this.setupComponent(component, this.root);
-    // this.root.append(...nodes);
+    this.setupComponent(component, this.root);
   }
 }

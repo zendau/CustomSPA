@@ -1,12 +1,11 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
-import { reactiveNodes, reactiveProxy } from "@core/reactivity";
-import { patchNode } from "@core/interfaces/typeNodes";
+import { reactiveNodes } from "@core/reactivity";
+import { PatchNodeType } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
-  private static isRenderSubscribe = false;
   private emitter!: Emmiter;
   private componentName!: string;
 
@@ -15,12 +14,6 @@ export default class RenderVDOM {
     this.componentName = componentName;
 
     this.emitter = Emmiter.getInstance();
-
-    // if (!RenderVDOM.isRenderSubscribe) {
-    //   this.emitter.subscribe("render:update", this.updateNodes.bind(this));
-
-    //   RenderVDOM.isRenderSubscribe = true;
-    // }
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
@@ -57,7 +50,7 @@ export default class RenderVDOM {
       const nodes = reactiveNodes.get(reactiveVariable as unknown as object);
 
       if (nodes) {
-        nodes.push([patchNode.PATCH_VALUE, textNode, this.componentName]);
+        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
       }
 
       el.appendChild(textNode);
@@ -74,8 +67,6 @@ export default class RenderVDOM {
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
-        console.log("ee", vdom.tag, vdom.props.if, this.componentProps);
-
         const ifReactive =
           vdom.props.if !== undefined
             ? this.componentProps.data![vdom.props.if]
@@ -84,7 +75,7 @@ export default class RenderVDOM {
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
         if (ifNodes)
-          ifNodes.push([patchNode.PATCH_IF, vdom.tag, this.componentName]);
+          ifNodes.push([PatchNodeType.PATCH_IF, vdom.tag, this.componentName]);
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
 

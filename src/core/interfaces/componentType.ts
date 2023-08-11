@@ -1,3 +1,5 @@
+import { IVDOMElement } from "./IVDOMElement";
+
 export type ComponentData = Record<string, any>;
 
 export interface IComponent {
@@ -8,6 +10,14 @@ export interface IComponent {
   onUnmounted: (...args: any) => void;
   onUpdate: (...args: any) => void;
   onBeforeUpdate: (...args: any) => void;
+}
+
+export interface ICreatedComponent {
+  vdom: IVDOMElement;
+  onUnmounted?: (...args: any) => void;
+  onUpdate?: (...args: any) => void;
+  onBeforeUpdate?: (...args: any) => void;
+  rerender: () => void;
 }
 
 export type ComponentProps = [string, Partial<IComponent>];

@@ -1,9 +1,8 @@
-export enum patchNode {
+export enum PatchNodeType {
   PATCH_VALUE = "PATCH_VALUE",
   PATCH_CLASS = "PATCH_CLASS",
   PATCH_STYLE = "PATCH_STYLE",
   PATCH_IF = "PATCH_IF",
 }
 
-// export type reactiveNode = [patchNode, Text | HTMLElement];
-export type reactiveNode = any;
+export type reactiveNode = [PatchNodeType, Text | HTMLElement | string, string];

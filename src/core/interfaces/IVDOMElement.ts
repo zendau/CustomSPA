@@ -13,7 +13,7 @@ interface IVDOMProps {
 }
 
 export interface IVDOMElement {
-  el?: Node;
+  el?: HTMLElement ;
   props: Partial<IVDOMProps>;
   tag: string;
   children?: IVDOMElement[];

@@ -1,19 +1,16 @@
-import { Emmiter } from "@core/Emitter";
 import { reactiveNode } from "@core/interfaces/typeNodes";
 import SPA from "./SPA";
 
 export const reactiveNodes = new Map<object, reactiveNode[]>();
 export const reactiveProxy = new Map<object, object>();
 
-const emitter = Emmiter.getInstance();
-
 function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
   const rootOjb = mainObj || obj;
 
   return new Proxy(obj, {
     set(target, key, value) {
-      SPA.updateNodes(rootOjb, value)
-      // emitter.emit("render:update", rootOjb, value);
+      SPA.updateNodes(rootOjb, value);
+
       return Reflect.set(target, key, value);
     },
     get(target, key): any {
