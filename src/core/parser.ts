@@ -5,11 +5,16 @@ export default class Parser {
   private events: eventTypes[] = ["click", "input"];
   private HTMLBody!: string[];
   private componentProps?: Partial<IComponent>;
+  private lastTag!: any;
+  private tempTag!: any;
 
   constructor(HTML: string, componentProps?: Partial<IComponent>) {
     if (!HTML) return;
 
     this.componentProps = componentProps;
+
+    this.lastTag = null;
+    this.tempTag = null;
 
     this.HTMLBody = HTML.replaceAll("\n", "")
       .replaceAll(/ {2,}/g, "")
@@ -17,6 +22,7 @@ export default class Parser {
   }
 
   public genereteVDOM() {
+    debugger;
     return this.HTMLParser();
   }
 
@@ -131,6 +137,7 @@ export default class Parser {
     };
 
     for (let i = startPos; i < this.HTMLBody.length; i++) {
+      this.lastTag = this.tempTag;
       const vdom: IVDOMElement = {
         tag: "",
         children: [],
@@ -148,6 +155,7 @@ export default class Parser {
 
       const tagTitle = tagPieces.shift() as string;
 
+      this.tempTag = tagTitle;
       vdom.tag = tagTitle;
       if (
         this.componentProps?.components &&
@@ -160,7 +168,12 @@ export default class Parser {
 
       tagData[0] = tagPieces.join(" ");
 
-      if (tagData[1]) {
+      if (
+        tagData[1] ||
+        (!tagData[1] &&
+          this.HTMLBody[i]?.charAt(0) !== "/" &&
+          this.HTMLBody[i + 1]?.charAt(0) === "/")
+      ) {
         vdom.props.value = tagData[1];
       } else if (
         tagData[0].charAt(tagData[0].length - 1) !== "/" ||
@@ -180,7 +193,7 @@ export default class Parser {
         } else if (tag.charAt(0) === "/") {
           tag = tag.slice(1, -1);
 
-          if (tag === htmlTag) {
+          if (tag === htmlTag && this.lastTag !== htmlTag) {
             return {
               pos: i,
               vdome: roomVDOM,

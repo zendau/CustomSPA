@@ -1,4 +1,4 @@
-import { ref } from "@SPA";
+import { ref, reactivity } from "@SPA";
 import { FnComponent } from "core/interfaces/componentType";
 import ThirdComponent from "./ThirdComponent";
 
@@ -8,6 +8,12 @@ interface ISecondComponentProps {
 
 const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
   const testRef = ref("testQ");
+
+  const testFor = reactivity([
+    { title: "item 1", count: 1 },
+    { title: "item 2", count: 2 },
+    { title: "item 3", count: 3 },
+  ]);
 
   console.log("1test", test);
 
@@ -21,7 +27,7 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
   return [
     body,
     {
-      data: { id: test.id, testRef },
+      data: { id: test.id, testRef, testFor },
       components: { ThirdComponent },
 
       onUnmounted: () => console.log("UNMOUNTED SECODND"),
