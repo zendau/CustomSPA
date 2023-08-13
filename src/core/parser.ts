@@ -22,7 +22,6 @@ export default class Parser {
   }
 
   public genereteVDOM() {
-    debugger;
     return this.HTMLParser();
   }
 
@@ -44,11 +43,33 @@ export default class Parser {
   }
 
   private getTagAttributes(tagsData: string[], vdom: IVDOMElement) {
-    for (let atr of tagsData) {
+    // console.log("ATTTR", tagsData);
+    for (let i = 0; i < tagsData.length; i++) {
+      let atr = tagsData[i];
+
       if (!atr) continue;
 
       if (atr.charAt(atr.length - 1) === "/") {
         atr = atr.substring(0, atr.length - 1);
+      }
+
+      if (atr.includes("for")) {
+        const res: string[] = [];
+
+        const forItem = atr.split("=")[1].replace(/["']/g, "");
+
+        res.push(forItem);
+
+        if (tagsData[i + 1] === "in") {
+          res.push(tagsData[i + 1]);
+          res.push(tagsData[i + 2].replace(/["']/g, ""));
+          i += 2;
+
+          vdom.props.for = res;
+          continue;
+        }
+
+        console.log("FOR22", atr, tagsData);
       }
 
       if (atr.includes("data-")) {
@@ -102,15 +123,12 @@ export default class Parser {
       console.log("item component", item);
 
       let [key, value] = item.split("=");
+      value = value.replace(/["']/g, "");
 
       if (key === "if") {
-        console.log("IF", value);
-        value = value.replace(/["']/g, "");
         vdom.props.if = value;
         continue;
       }
-
-      value = value.replace(/["']/g, "");
 
       if (key.charAt(0) === ":") {
         const newKey = key.substring(1, key.length);

@@ -10,6 +10,7 @@ interface IVDOMProps {
   value: string;
   componentProps: IComponentProps;
   if: string;
+  for: string[]
 }
 
 export interface IVDOMElement {

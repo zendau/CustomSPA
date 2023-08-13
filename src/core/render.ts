@@ -33,12 +33,29 @@ export default class RenderVDOM {
 
     for (const reactiveData of checkSplit) {
       if (!reactiveData) continue;
-      let reactiveVariable = reactiveData;
+      let reactiveVariable: string | undefined = reactiveData;
 
       const isReactive = checkReactive.indexOf(reactiveData);
 
+      let nodes = null;
+
       if (this.componentProps?.data && isReactive !== -1) {
-        reactiveVariable = this.componentProps.data[reactiveData];
+        if (reactiveData.includes(".")) {
+          const dotReactiveData = reactiveData.split(".");
+
+          reactiveVariable = dotReactiveData.reduce(
+            (prev, curr) => prev[curr],
+            this.componentProps.data
+          ) as unknown as string | undefined;
+
+          nodes = reactiveNodes.get(
+            this.componentProps.data[dotReactiveData[0]]
+          );
+        } else {
+          reactiveVariable = this.componentProps.data[reactiveData];
+
+          nodes = reactiveNodes.get(reactiveVariable as unknown as object);
+        }
       }
 
       if (!reactiveVariable) {
@@ -46,8 +63,6 @@ export default class RenderVDOM {
         return;
       }
       const textNode = document.createTextNode(reactiveVariable);
-
-      const nodes = reactiveNodes.get(reactiveVariable as unknown as object);
 
       if (nodes) {
         nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
@@ -111,10 +126,6 @@ export default class RenderVDOM {
       this.getTagValue(vdom.props.value, el);
     }
 
-    if (vdom.children) {
-      vdom.children.forEach((child) => this.render(el, child));
-    }
-
     if (vdom.props.events && this.componentProps?.data) {
       Object.entries(vdom.props.events).forEach(([event, action]) => {
         if (!this.componentProps!.data![action]) {
@@ -123,6 +134,31 @@ export default class RenderVDOM {
           el.addEventListener(event, this.componentProps!.data![action]);
         }
       });
+    }
+
+    if (vdom.props.for) {
+      const reactiveFor =
+        this.componentProps?.data![vdom.props.for.at(-1) as string];
+
+      reactiveFor.forEach((data: any) => {
+        debugger;
+        if (vdom.children && vdom.children.length > 0) {
+          const key = vdom.props.for![0];
+
+          if (!this.componentProps) this.componentProps = { data: {} };
+          if (!this.componentProps.data) this.componentProps.data = {};
+
+          this.componentProps.data[key] = data;
+
+          vdom.children.forEach((child) => this.render(el, child));
+
+          console.log("EL", el);
+
+          delete this.componentProps.data[key];
+        }
+      });
+    } else if (vdom.children && vdom.children.length > 0) {
+      vdom.children.forEach((child) => this.render(el, child));
     }
 
     if (!isEmptyTag) root.appendChild(el);

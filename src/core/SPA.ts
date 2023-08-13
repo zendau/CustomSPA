@@ -65,6 +65,7 @@ export default class SPA {
         }
       },
     });
+    console.log("????", SPA.components);
   }
 
   public static updateNodes(obj: object, value: any) {
