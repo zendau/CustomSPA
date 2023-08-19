@@ -1,17 +1,24 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes } from "@core/reactivity";
-import { PatchNodeType } from "@core/interfaces/typeNodes";
+import { PatchNodeType, insertVDOMTypes } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private emitter!: Emmiter;
   private componentName!: string;
+  private componentId: string;
 
-  constructor(componentName: string, componentProps?: Partial<IComponent>) {
+  constructor(
+    componentName: string,
+    componentId: string,
+    componentProps?: Partial<IComponent>
+  ) {
     this.componentProps = componentProps;
     this.componentName = componentName;
+
+    this.componentId = componentId;
 
     this.emitter = Emmiter.getInstance();
   }
@@ -65,14 +72,40 @@ export default class RenderVDOM {
       const textNode = document.createTextNode(reactiveVariable);
 
       if (nodes) {
-        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
+        nodes.push([
+          PatchNodeType.PATCH_VALUE,
+          textNode,
+          `${this.componentName}:${this.componentId}`,
+        ]);
       }
 
       el.appendChild(textNode);
     }
   }
 
-  public render(root: HTMLElement | null, vdom: IVDOMElement) {
+  public insertVDOM(
+    vdom: IVDOMElement,
+    node: HTMLElement,
+    type: insertVDOMTypes
+  ) {
+    const tempContainer = document.createElement("div");
+
+    this.render(vdom, tempContainer);
+
+    if (type === "append") {
+      Array.from(tempContainer.children).forEach((child) =>
+        node.appendChild(child)
+      );
+    } else if (type === "insert") {
+      for (let i = tempContainer.children.length - 1; i >= 0; i--) {
+        const child = tempContainer.children[i];
+
+        node.after(child);
+      }
+    }
+  }
+
+  public render(vdom: IVDOMElement, root: HTMLElement) {
     if (!root) return;
 
     const isEmptyTag = !vdom.tag;
@@ -82,6 +115,9 @@ export default class RenderVDOM {
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
+        const componentId = window.crypto.randomUUID();
+        vdom.componentId = componentId;
+
         const ifReactive =
           vdom.props.if !== undefined
             ? this.componentProps.data![vdom.props.if]
@@ -90,7 +126,11 @@ export default class RenderVDOM {
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
         if (ifNodes)
-          ifNodes.push([PatchNodeType.PATCH_IF, vdom.tag, this.componentName]);
+          ifNodes.push([
+            PatchNodeType.PATCH_IF,
+            `${vdom.tag}:${vdom.componentId}`,
+            `${this.componentName}:${this.componentId}`,
+          ]);
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
 
@@ -98,6 +138,7 @@ export default class RenderVDOM {
           "app:setupComponent",
           this.componentProps?.components[vdom.tag],
           root,
+          componentId,
           vdom.props.componentProps
         );
 
@@ -110,6 +151,8 @@ export default class RenderVDOM {
     if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
       vdom.el = el;
+
+      root.appendChild(el);
     } else {
       el = root;
     }
@@ -140,9 +183,13 @@ export default class RenderVDOM {
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
+      const nodes = reactiveNodes.get(reactiveFor);
+      const createdForNodes: HTMLElement[] = [];
+
       reactiveFor.forEach((data: any) => {
-        debugger;
         if (vdom.children && vdom.children.length > 0) {
+          const forNode = el.cloneNode() as HTMLElement;
+
           const key = vdom.props.for![0];
 
           if (!this.componentProps) this.componentProps = { data: {} };
@@ -150,17 +197,28 @@ export default class RenderVDOM {
 
           this.componentProps.data[key] = data;
 
-          vdom.children.forEach((child) => this.render(el, child));
+          vdom.children.forEach((child) => this.render(child, forNode));
 
-          console.log("EL", el);
+          createdForNodes.push(forNode);
+
+          root.appendChild(forNode);
 
           delete this.componentProps.data[key];
         }
       });
-    } else if (vdom.children && vdom.children.length > 0) {
-      vdom.children.forEach((child) => this.render(el, child));
-    }
 
-    if (!isEmptyTag) root.appendChild(el);
+      if (nodes) {
+        nodes.push([
+          PatchNodeType.PATCH_FOR,
+          createdForNodes,
+          `${this.componentName}:${this.componentId}`,
+        ]);
+      }
+
+      return;
+    }
+    if (vdom.children && vdom.children.length > 0) {
+      vdom.children.forEach((child) => this.render(child, el));
+    }
   }
 }

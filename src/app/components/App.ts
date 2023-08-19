@@ -16,15 +16,16 @@ const App: FnComponent = () => {
 
   const body = `
     <>
-      <p class='box find'>{testRef}</p>
-      <div>
-        <button id='test' @click='testInc'>Inc</button>
-        <button @click='testDec'>Dec</button>
-      </div>
-      <input id='one' @input='testDec'/>
-      <input id='two' />
-      <button @click='changeIf'>Test if</button>
-      <SecondComponent if='testIf' msg='test message' :id='testRef'/>
+    <p class='box find'>{testRef}</p>
+    <div>
+    <button id='test' @click='testInc'>Inc</button>
+    <button @click='testDec'>Dec</button>
+    </div>
+    <input id='one' @input='testDec'/>
+    <input id='two' />
+    <button @click='changeIf'>Test if</button>
+    <SecondComponent if='testIf' msg='test message' :id='testRef'/>
+      <h1>END</h1>
     </>`;
 
   function testInc() {

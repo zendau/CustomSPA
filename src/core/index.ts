@@ -1,2 +1,2 @@
-export { default as SPA } from "./SPA";
+export { SPA } from "./SPA";
 export { ref, reactivity } from "./reactivity";

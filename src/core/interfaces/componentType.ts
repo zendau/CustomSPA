@@ -17,7 +17,12 @@ export interface ICreatedComponent {
   onUnmounted?: (...args: any) => void;
   onUpdate?: (...args: any) => void;
   onBeforeUpdate?: (...args: any) => void;
-  rerender: () => void;
+  rerender: (vdom: lastVDOMElement) => void;
+}
+
+export interface lastVDOMElement {
+  lastNeighborNode: HTMLElement;
+  vdom: IVDOMElement;
 }
 
 export type ComponentProps = [string, Partial<IComponent>];

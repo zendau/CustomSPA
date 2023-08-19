@@ -1,5 +1,5 @@
 import { reactiveNode } from "@core/interfaces/typeNodes";
-import SPA from "./SPA";
+import { updateNodes } from "./SPA";
 
 export const reactiveNodes = new Map<object, reactiveNode[]>();
 export const reactiveProxy = new Map<object, object>();
@@ -9,7 +9,7 @@ function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
 
   return new Proxy(obj, {
     set(target, key, value) {
-      SPA.updateNodes(rootOjb, value);
+      updateNodes(rootOjb, value);
 
       return Reflect.set(target, key, value);
     },

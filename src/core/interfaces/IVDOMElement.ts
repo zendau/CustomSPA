@@ -10,12 +10,13 @@ interface IVDOMProps {
   value: string;
   componentProps: IComponentProps;
   if: string;
-  for: string[]
+  for: string[];
 }
 
 export interface IVDOMElement {
-  el?: HTMLElement ;
+  el?: HTMLElement;
   props: Partial<IVDOMProps>;
   tag: string;
   children?: IVDOMElement[];
+  componentId?: string;
 }

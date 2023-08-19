@@ -19,15 +19,16 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
 
   console.log("1test", test);
 
-  //   <div for="item in testFor" id="test">
-  //   <div>{item.title}</div>
-  //   <div>{item.count}</div>
-  // </div>
-
   function testInput(e: any) {
-    testReactivity.title = e.target.value
+    testReactivity.title = e.target.value;
+
+    testFor.forEach((item, index) => (item.title = e.target.value + index));
   }
 
+  // <div for="item in testFor" id="test">
+  //   <div>{item.title}</div>
+  //   <div>{item.count}</div>
+  // </div>;
   const body = `
     <>
       <h1>Hello from second component {id} and {testRef}</h1>
@@ -35,6 +36,7 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
       <input @input='testInput' />
       <p>test - {testReactivity.title} - ref</p>
 
+      <ThirdComponent />
       <ThirdComponent />
     </>`;
 
