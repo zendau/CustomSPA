@@ -19,4 +19,5 @@ export interface IVDOMElement {
   tag: string;
   children?: IVDOMElement[];
   componentId?: string;
+  parentComponent?: string;
 }

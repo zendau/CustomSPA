@@ -43,7 +43,6 @@ export default class Parser {
   }
 
   private getTagAttributes(tagsData: string[], vdom: IVDOMElement) {
-    // console.log("ATTTR", tagsData);
     for (let i = 0; i < tagsData.length; i++) {
       let atr = tagsData[i];
 
@@ -51,6 +50,14 @@ export default class Parser {
 
       if (atr.charAt(atr.length - 1) === "/") {
         atr = atr.substring(0, atr.length - 1);
+      }
+
+      if (atr.includes("if")) {
+
+        const ifValue = atr.split("=")[1].replace(/["']/g, "");
+
+        vdom.props.if = ifValue;
+        continue;
       }
 
       if (atr.includes("for")) {

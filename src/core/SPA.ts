@@ -9,7 +9,11 @@ import RenderVDOM from "@core/Render";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes, reactiveProxy } from "./reactivity";
 import { PatchNodeType } from "./interfaces/typeNodes";
-import { clearNodes, findNeighborVDOM } from "./utils/domUtils";
+import {
+  clearNodes,
+  findNeighborVDOMComponent,
+  findNeighborVDOMNode,
+} from "./utils/domUtils";
 import debounce from "./utils/debounce";
 
 export class SPA {
@@ -53,6 +57,24 @@ export class SPA {
       props.onMounted();
     }
 
+    function ttt(children: IVDOMElement[] | undefined) {
+      if (!children) return;
+
+      if (children.length === 1) return ttt(children[0].children);
+
+      children.forEach((child) => {
+        const component = SPA.components.get(
+          `${child.tag}:${child.componentId}`
+        );
+
+        if (component) {
+          component.vdom.parentComponent = `${componentName}:${componentId}`;
+        }
+      });
+    }
+
+    ttt(vdom.children);
+
     SPA.components.set(`${componentName}:${componentId}`, {
       vdom,
       onUpdate: props.onUpdate,
@@ -63,12 +85,14 @@ export class SPA {
           props.onBeforeMounted();
         }
 
-        render.insertVDOM(node.vdom, node.lastNeighborNode, "insert");
+        render.insertVDOM(node.vdom, node.lastNeighborNode[1], node.lastNeighborNode[0]);
         if (props.onMounted) {
           props.onMounted();
         }
       },
     });
+
+    console.log(SPA.components);
   }
 
   public static updateNodes(obj: object, value: any) {
@@ -97,7 +121,28 @@ export class SPA {
 
       if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
         node.data = value;
-      } else if (type === PatchNodeType.PATCH_IF && typeof node === "string") {
+      } else if (
+        type === PatchNodeType.PATCH_IF_NODE &&
+        node instanceof HTMLElement
+      ) {
+        debugger;
+        if (value) {
+          const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node);
+
+          if (!insertNode) return;
+
+          updatedComponent.rerender(insertNode);
+        } else {
+          node.remove();
+
+          if (updatedComponent.onUnmounted) {
+            updatedComponent.onUnmounted();
+          }
+        }
+      } else if (
+        type === PatchNodeType.PATCH_IF_COMPONENT &&
+        typeof node === "string"
+      ) {
         if (!node && typeof node !== "string") {
           console.error(
             `component name - ${node} is not valid. Must be string value`
@@ -112,8 +157,8 @@ export class SPA {
         }
 
         if (value) {
-          const insertNode = findNeighborVDOM(
-            updatedComponent.vdom.children,
+          const insertNode = findNeighborVDOMComponent(
+            updatedComponent.vdom,
             node
           );
 

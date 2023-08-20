@@ -1,3 +1,7 @@
+import {
+  lastNeighborNode,
+  lastVDOMElement,
+} from "@core/interfaces/componentType";
 import { SPA } from "../SPA";
 import { IVDOMElement } from "../interfaces/IVDOMElement";
 
@@ -26,31 +30,55 @@ export function clearNodes(nodes?: IVDOMElement[]) {
   });
 }
 
-function findNeighborNode(children: IVDOMElement[], pos: number) {
-  if (!children) return SPA.root; // temp
+// function qqq(parentVDOM: IVDOMElement, prevVDOM: IVDOMElement) {
+//   if (!parentVDOM || !parentVDOM.children) return;
 
-  for (let i = pos - 1; i !== 0; i--) {
-    const child = children[i];
+//   const prevIndex = parentVDOM.children.indexOf(prevVDOM);
 
-    if (child.el && document.contains(child.el)) return child.el;
+//   for (let i = prevIndex - 1; i >= 0; i--) {
+//     const child = parentVDOM.children[i];
+
+//     if (child === parentVDOM) continue;
+
+//     if (child.el && document.contains(child.el)) return child.el;
+//   }
+
+//   if (parentVDOM.parentVDOM) {
+//     return qqq(parentVDOM.parentVDOM, parentVDOM);
+//   }
+// }
+
+function findNeighborNode(vdom: IVDOMElement, pos?: number): lastNeighborNode {
+  debugger;
+  if (!vdom || !vdom.children) return ["append", SPA.root]; // temp
+
+  if (typeof pos === "undefined") pos = vdom.children.length;
+
+  for (let i = pos - 1; i >= 0; i--) {
+    const child = vdom.children[i];
+
+    if (child.el && document.contains(child.el)) return ["after", child.el];
   }
 
-  return SPA.root;
+  for (let i = pos + 1; i < vdom.children.length; i++) {
+    const child = vdom.children[i];
+
+    if (child.el && document.contains(child.el)) return ["before", child.el];
+  }
+
+  return ["append", SPA.root];
 }
 
-export function findNeighborVDOM(
-  children: IVDOMElement[] | undefined,
+export function findNeighborVDOMComponent(
+  vdom: IVDOMElement | undefined,
   findNode: string
 ) {
-  if (!children) return;
-
-  if (children.length === 1)
-    return findNeighborVDOM(children[0].children, findNode);
+  if (!vdom || !vdom.children) return;
 
   const [tag, componentId] = findNode.split(":");
 
-  for (let i = 0; i < children.length; i++) {
-    let child = children[i];
+  for (let i = 0; i < vdom.children.length; i++) {
+    let child = vdom.children[i];
 
     if (child.tag === tag) {
       if (
@@ -60,8 +88,36 @@ export function findNeighborVDOM(
       ) {
         child = SPA.components.get(`${child.tag}:${child.componentId}`)!.vdom;
       }
-      const lastNeighborNode = findNeighborNode(children, i);
+      const lastNeighborNode = findNeighborNode(vdom, i);
       return { lastNeighborNode, vdom: child };
+    }
+  }
+  return findNeighborVDOMComponent(vdom.children[0], findNode);
+}
+
+export function findNeighborVDOMNode(
+  vdom: IVDOMElement | undefined,
+  findNode: HTMLElement
+): lastVDOMElement | undefined {
+  if (!vdom || !vdom.children) return;
+
+  for (let i = 0; i < vdom.children.length; i++) {
+    let child = vdom.children[i];
+
+    if (child.el === findNode) {
+      const lastNeighborNode = findNeighborNode(vdom, i);
+      return { lastNeighborNode, vdom: child };
+    }
+
+    if (child.children) {
+      const resData: lastVDOMElement | undefined = findNeighborVDOMNode(
+        vdom.children[0],
+        findNode
+      );
+
+      if (resData) {
+        return resData;
+      }
     }
   }
 }

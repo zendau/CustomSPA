@@ -1,4 +1,5 @@
 import { IVDOMElement } from "./IVDOMElement";
+import { insertVDOMTypes } from "./typeNodes";
 
 export type ComponentData = Record<string, any>;
 
@@ -20,8 +21,10 @@ export interface ICreatedComponent {
   rerender: (vdom: lastVDOMElement) => void;
 }
 
+export type lastNeighborNode = [insertVDOMTypes, HTMLElement];
+
 export interface lastVDOMElement {
-  lastNeighborNode: HTMLElement;
+  lastNeighborNode: lastNeighborNode;
   vdom: IVDOMElement;
 }
 

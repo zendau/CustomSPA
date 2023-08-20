@@ -96,11 +96,17 @@ export default class RenderVDOM {
       Array.from(tempContainer.children).forEach((child) =>
         node.appendChild(child)
       );
-    } else if (type === "insert") {
+    } else if (type === "after") {
       for (let i = tempContainer.children.length - 1; i >= 0; i--) {
         const child = tempContainer.children[i];
 
         node.after(child);
+      }
+    } else if (type === "before") {
+      for (let i = tempContainer.children.length - 1; i >= 0; i--) {
+        const child = tempContainer.children[i];
+
+        node.before(child);
       }
     }
   }
@@ -111,6 +117,11 @@ export default class RenderVDOM {
     const isEmptyTag = !vdom.tag;
 
     if (this.componentProps?.components) {
+      const ifReactive =
+        vdom.props.if !== undefined
+          ? this.componentProps.data![vdom.props.if]
+          : undefined;
+
       const componentElementIndex = Object.keys(
         this.componentProps.components
       ).indexOf(vdom.tag);
@@ -118,16 +129,11 @@ export default class RenderVDOM {
         const componentId = window.crypto.randomUUID();
         vdom.componentId = componentId;
 
-        const ifReactive =
-          vdom.props.if !== undefined
-            ? this.componentProps.data![vdom.props.if]
-            : undefined;
-
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
         if (ifNodes)
           ifNodes.push([
-            PatchNodeType.PATCH_IF,
+            PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
             `${this.componentName}:${this.componentId}`,
           ]);
@@ -163,6 +169,24 @@ export default class RenderVDOM {
 
     if (vdom.props.class) {
       el.classList.add(...vdom.props.class);
+    }
+
+    if (vdom.props.if) {
+      const ifReactive =
+        vdom.props.if !== undefined
+          ? this.componentProps!.data![vdom.props.if]
+          : undefined;
+
+      let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
+
+      if (ifNodes && vdom.el)
+        ifNodes.push([
+          PatchNodeType.PATCH_IF_NODE,
+          vdom.el,
+          `${this.componentName}:${this.componentId}`,
+        ]);
+
+      if (ifReactive?._isRef === true && ifReactive?.value === false) return;
     }
 
     if (vdom.props.value) {
