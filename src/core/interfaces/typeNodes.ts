@@ -1,3 +1,5 @@
+import { IVDOMElement } from "./IVDOMElement";
+
 export enum PatchNodeType {
   PATCH_VALUE = "PATCH_VALUE",
   PATCH_CLASS = "PATCH_CLASS",
@@ -7,7 +9,7 @@ export enum PatchNodeType {
   PATCH_FOR = "PATCH_FOR",
 }
 
-export type VDOMNode = Text | HTMLElement | string | HTMLElement[];
+export type VDOMNode = Text | HTMLElement | string | HTMLElement[] | IVDOMElement;
 export type reactiveNode = [PatchNodeType, VDOMNode, string];
 
 export type insertVDOMTypes = "after" | "before" | "append" ;

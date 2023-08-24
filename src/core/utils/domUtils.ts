@@ -10,7 +10,11 @@ export function clearNodes(nodes?: IVDOMElement[]) {
 
   nodes.forEach((node) => {
     if (node.el) {
-      node.el.remove();
+      if (Array.isArray(node.el)) {
+        node.el.forEach((el) => el.remove());
+      } else {
+        node.el.remove();
+      }
     } else {
       if (SPA.components.has(`${node.tag}:${node.componentId}`)) {
         const component = SPA.components.get(`${node.tag}:${node.componentId}`);
@@ -30,26 +34,7 @@ export function clearNodes(nodes?: IVDOMElement[]) {
   });
 }
 
-// function qqq(parentVDOM: IVDOMElement, prevVDOM: IVDOMElement) {
-//   if (!parentVDOM || !parentVDOM.children) return;
-
-//   const prevIndex = parentVDOM.children.indexOf(prevVDOM);
-
-//   for (let i = prevIndex - 1; i >= 0; i--) {
-//     const child = parentVDOM.children[i];
-
-//     if (child === parentVDOM) continue;
-
-//     if (child.el && document.contains(child.el)) return child.el;
-//   }
-
-//   if (parentVDOM.parentVDOM) {
-//     return qqq(parentVDOM.parentVDOM, parentVDOM);
-//   }
-// }
-
 function findNeighborNode(vdom: IVDOMElement, pos?: number): lastNeighborNode {
-  debugger;
   if (!vdom || !vdom.children) return ["append", SPA.root]; // temp
 
   if (typeof pos === "undefined") pos = vdom.children.length;
@@ -57,13 +42,15 @@ function findNeighborNode(vdom: IVDOMElement, pos?: number): lastNeighborNode {
   for (let i = pos - 1; i >= 0; i--) {
     const child = vdom.children[i];
 
-    if (child.el && document.contains(child.el)) return ["after", child.el];
+    if (child.el && !Array.isArray(child.el) && document.contains(child.el))
+      return ["after", child.el];
   }
 
   for (let i = pos + 1; i < vdom.children.length; i++) {
     const child = vdom.children[i];
 
-    if (child.el && document.contains(child.el)) return ["before", child.el];
+    if (child.el && !Array.isArray(child.el) && document.contains(child.el))
+      return ["before", child.el];
   }
 
   return ["append", SPA.root];
@@ -104,12 +91,15 @@ export function findNeighborVDOMNode(
   for (let i = 0; i < vdom.children.length; i++) {
     let child = vdom.children[i];
 
-    if (child.el === findNode) {
+    if (
+      child.el === findNode ||
+      (Array.isArray(child.el) && child.el.includes(findNode))
+    ) {
       const lastNeighborNode = findNeighborNode(vdom, i);
       return { lastNeighborNode, vdom: child };
     }
 
-    if (child.children) {
+    if (child.children && child.children.length > 1) {
       const resData: lastVDOMElement | undefined = findNeighborVDOMNode(
         vdom.children[0],
         findNode

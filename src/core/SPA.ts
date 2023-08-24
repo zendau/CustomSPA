@@ -85,7 +85,11 @@ export class SPA {
           props.onBeforeMounted();
         }
 
-        render.insertVDOM(node.vdom, node.lastNeighborNode[1], node.lastNeighborNode[0]);
+        render.insertVDOM(
+          node.vdom,
+          node.lastNeighborNode[1],
+          node.lastNeighborNode[0]
+        );
         if (props.onMounted) {
           props.onMounted();
         }
@@ -97,7 +101,6 @@ export class SPA {
 
   public static updateNodes(obj: object, value: any) {
     const proxy = reactiveProxy.get(obj);
-
     if (!proxy) {
       console.error(`proxy object not found ${obj}`);
       return;
@@ -106,6 +109,8 @@ export class SPA {
     const nodes = reactiveNodes.get(proxy);
 
     if (!nodes) return;
+
+    console.log("#######", nodes);
 
     nodes.forEach(([type, node, componentName]) => {
       const updatedComponent = SPA.components.get(componentName);
@@ -125,7 +130,6 @@ export class SPA {
         type === PatchNodeType.PATCH_IF_NODE &&
         node instanceof HTMLElement
       ) {
-        debugger;
         if (value) {
           const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node);
 
@@ -171,8 +175,24 @@ export class SPA {
             component.onUnmounted();
           }
         }
-      } else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
-        node.forEach((item) => item.remove());
+      } else if (
+        type === PatchNodeType.PATCH_FOR &&
+        node instanceof Object &&
+        "tag" in node &&
+        Array.isArray(node.el)
+      ) {
+        node.el.forEach((item) => item.remove());
+
+        const insertNode = findNeighborVDOMNode(
+          updatedComponent.vdom,
+          node.el[0]
+        );
+
+        if (!insertNode) return;
+
+        console.log("!!!@!@", insertNode, SPA.components);
+
+        updatedComponent.rerender(insertNode);
       }
 
       if (updatedComponent?.onUpdate) {

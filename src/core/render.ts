@@ -156,7 +156,11 @@ export default class RenderVDOM {
 
     if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
-      vdom.el = el;
+      debugger;
+
+      if (!Array.isArray(vdom.el)) {
+        vdom.el = el;
+      }
 
       root.appendChild(el);
     } else {
@@ -231,10 +235,24 @@ export default class RenderVDOM {
         }
       });
 
+      if (createdForNodes.length > 0) {
+        debugger;
+        vdom.el = createdForNodes;
+      }
+
       if (nodes) {
+        for (const node of nodes) {
+          if (
+            node[0] === PatchNodeType.PATCH_FOR &&
+            node[1] === vdom &&
+            node[2] === `${this.componentName}:${this.componentId}`
+          )
+            return;
+        }
+
         nodes.push([
           PatchNodeType.PATCH_FOR,
-          createdForNodes,
+          vdom,
           `${this.componentName}:${this.componentId}`,
         ]);
       }
