@@ -1,7 +1,8 @@
-import '../style.css'
+import "../style.css";
 import { SPA } from "@SPA";
 import App from "@app/components/App";
+import { AppRouter } from "@core/libs/router";
 
-const appRoot = document.getElementById("app");
+const root = document.getElementById("app");
 
-new SPA(appRoot, App);
+new SPA(App).use("router", AppRouter).mount(root);

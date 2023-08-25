@@ -1,24 +1,17 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes } from "@core/reactivity";
-import { PatchNodeType, insertVDOMTypes } from "@core/interfaces/typeNodes";
+import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private emitter!: Emmiter;
   private componentName!: string;
-  private componentId: string;
 
-  constructor(
-    componentName: string,
-    componentId: string,
-    componentProps?: Partial<IComponent>
-  ) {
+  constructor(componentName: string, componentProps?: Partial<IComponent>) {
     this.componentProps = componentProps;
     this.componentName = componentName;
-
-    this.componentId = componentId;
 
     this.emitter = Emmiter.getInstance();
   }
@@ -72,11 +65,7 @@ export default class RenderVDOM {
       const textNode = document.createTextNode(reactiveVariable);
 
       if (nodes) {
-        nodes.push([
-          PatchNodeType.PATCH_VALUE,
-          textNode,
-          `${this.componentName}:${this.componentId}`,
-        ]);
+        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
       }
 
       el.appendChild(textNode);
@@ -86,7 +75,7 @@ export default class RenderVDOM {
   public insertVDOM(
     vdom: IVDOMElement,
     node: HTMLElement,
-    type: insertVDOMTypes
+    type: insertVDOMType
   ) {
     const tempContainer = document.createElement("div");
 
@@ -108,6 +97,7 @@ export default class RenderVDOM {
 
         node.before(child);
       }
+    } else if (type === "replace") {
     }
   }
 
@@ -135,7 +125,7 @@ export default class RenderVDOM {
           ifNodes.push([
             PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
-            `${this.componentName}:${this.componentId}`,
+            this.componentName,
           ]);
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
@@ -145,6 +135,7 @@ export default class RenderVDOM {
           this.componentProps?.components[vdom.tag],
           root,
           componentId,
+          "append",
           vdom.props.componentProps
         );
 
@@ -187,7 +178,7 @@ export default class RenderVDOM {
         ifNodes.push([
           PatchNodeType.PATCH_IF_NODE,
           vdom.el,
-          `${this.componentName}:${this.componentId}`,
+          this.componentName,
         ]);
 
       if (ifReactive?._isRef === true && ifReactive?.value === false) return;
@@ -244,17 +235,13 @@ export default class RenderVDOM {
         for (const node of nodes) {
           if (
             node[0] === PatchNodeType.PATCH_FOR &&
-            node[1] === vdom &&
-            node[2] === `${this.componentName}:${this.componentId}`
+            node[1] === vdom.el &&
+            node[2] === this.componentName
           )
             return;
         }
 
-        nodes.push([
-          PatchNodeType.PATCH_FOR,
-          vdom,
-          `${this.componentName}:${this.componentId}`,
-        ]);
+        nodes.push([PatchNodeType.PATCH_FOR, vdom, this.componentName]);
       }
 
       return;

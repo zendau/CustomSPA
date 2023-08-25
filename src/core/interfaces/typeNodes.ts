@@ -12,4 +12,4 @@ export enum PatchNodeType {
 export type VDOMNode = Text | HTMLElement | string | HTMLElement[] | IVDOMElement;
 export type reactiveNode = [PatchNodeType, VDOMNode, string];
 
-export type insertVDOMTypes = "after" | "before" | "append" ;
+export type insertVDOMType = "after" | "before" | "append" | "replace" ;

@@ -8,52 +8,57 @@ import Parser from "@core/Parser";
 import RenderVDOM from "@core/Render";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes, reactiveProxy } from "./reactivity";
-import { PatchNodeType } from "./interfaces/typeNodes";
+import { PatchNodeType, insertVDOMType } from "./interfaces/typeNodes";
 import {
   clearNodes,
   findNeighborVDOMComponent,
   findNeighborVDOMNode,
 } from "./utils/domUtils";
 import debounce from "./utils/debounce";
+import { ExternalModuleInterface } from "./libs/router";
 
 export class SPA {
+  [x: string]: any;
   public static root: HTMLElement;
   private emitter!: Emmiter;
   public static components = new Map<string, ICreatedComponent>();
+  private modules = new Map<string, ExternalModuleInterface>();
+  private rootComponent!: FnComponent;
 
-  constructor(root: HTMLElement | null, mainComponent: FnComponent) {
-    if (!root) return;
+  constructor(rootComponent: FnComponent) {
+    this.rootComponent = rootComponent;
 
-    SPA.root = root;
     this.emitter = Emmiter.getInstance();
     this.emitter.subscribe(
       "app:setupComponent",
       this.setupComponent.bind(this)
     );
-
-    this.mount(mainComponent);
   }
 
   private setupComponent(
     component: FnComponent,
     root: HTMLElement,
-    componentId: string,
+    componentId: string | null,
+    type: insertVDOMType,
     componentProps?: ComponentProps
   ) {
     const [template, props] = component(componentProps);
-    const componentName = component.name;
+    const componentName = componentId
+      ? `${component.name}:${componentId}`
+      : component.name;
 
-    if (props.onBeforeMounted) {
+    if (props?.onBeforeMounted) {
       props.onBeforeMounted();
     }
 
     const parser = new Parser(template, props);
-    const render = new RenderVDOM(componentName, componentId, props);
+
+    const render = new RenderVDOM(componentName, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
-    render.insertVDOM(vdom, root, "append");
+    render.insertVDOM(vdom, root, type);
 
-    if (props.onMounted) {
+    if (props?.onMounted) {
       props.onMounted();
     }
 
@@ -68,20 +73,20 @@ export class SPA {
         );
 
         if (component) {
-          component.vdom.parentComponent = `${componentName}:${componentId}`;
+          component.vdom.parentComponent = componentName;
         }
       });
     }
 
     ttt(vdom.children);
 
-    SPA.components.set(`${componentName}:${componentId}`, {
+    SPA.components.set(componentName, {
       vdom,
-      onUpdate: props.onUpdate,
-      onBeforeUpdate: props.onBeforeUpdate,
-      onUnmounted: props.onUnmounted,
+      onUpdate: props?.onUpdate,
+      onBeforeUpdate: props?.onBeforeUpdate,
+      onUnmounted: props?.onUnmounted,
       rerender: (node) => {
-        if (props.onBeforeMounted) {
+        if (props?.onBeforeMounted) {
           props.onBeforeMounted();
         }
 
@@ -90,7 +95,7 @@ export class SPA {
           node.lastNeighborNode[1],
           node.lastNeighborNode[0]
         );
-        if (props.onMounted) {
+        if (props?.onMounted) {
           props.onMounted();
         }
       },
@@ -175,18 +180,10 @@ export class SPA {
             component.onUnmounted();
           }
         }
-      } else if (
-        type === PatchNodeType.PATCH_FOR &&
-        node instanceof Object &&
-        "tag" in node &&
-        Array.isArray(node.el)
-      ) {
-        node.el.forEach((item) => item.remove());
+      } else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
+        node.forEach((item) => item.remove());
 
-        const insertNode = findNeighborVDOMNode(
-          updatedComponent.vdom,
-          node.el[0]
-        );
+        const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node[0]);
 
         if (!insertNode) return;
 
@@ -201,8 +198,23 @@ export class SPA {
     });
   }
 
-  private mount(component: FnComponent) {
-    this.setupComponent(component, SPA.root, "");
+  public mount(root: HTMLElement | null) {
+    if (!root) return;
+
+    SPA.root = root;
+
+    if (this.modules.has("router")) {
+      console.log("HAS ROUTER");
+    }
+
+    this.setupComponent(this.rootComponent, root, null, "append");
+  }
+
+  public use(name: string, module: ExternalModuleInterface) {
+    this.modules.set(name, module);
+    module.init(this);
+
+    return this;
   }
 }
 

@@ -75,13 +75,10 @@ export default class Parser {
           vdom.props.for = res;
           continue;
         }
-
-        console.log("FOR22", atr, tagsData);
       }
 
       if (atr.includes("data-")) {
         const dataValue = atr.replace("data-", "").split("=");
-        console.log("dataValue", dataValue);
 
         if (!vdom.props.dataset) {
           vdom.props.dataset = {};
@@ -127,7 +124,6 @@ export default class Parser {
     vdom.props.componentProps = {};
 
     for (let item of componentData) {
-      console.log("item component", item);
 
       let [key, value] = item.split("=");
       value = value.replace(/["']/g, "");
@@ -169,8 +165,6 @@ export default class Parser {
         props: {},
       };
       let tag = this.HTMLBody[i];
-
-      console.log("TAG", tag, i);
 
       if (!tag) continue;
 
