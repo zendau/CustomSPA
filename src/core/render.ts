@@ -3,6 +3,7 @@ import { Emmiter } from "@core/Emitter";
 import { reactiveNodes } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
+import removeArrayObject from "./utils/removeArrayObject";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
@@ -147,7 +148,6 @@ export default class RenderVDOM {
 
     if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
-      debugger;
 
       if (!Array.isArray(vdom.el)) {
         vdom.el = el;
@@ -199,10 +199,21 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
+      debugger;
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
       const nodes = reactiveNodes.get(reactiveFor);
+
+      if (nodes) {
+        const removeNode = nodes.find((node) => node[1] === vdom.el);
+
+        if (removeNode) {
+          removeArrayObject(nodes, removeNode)
+        }
+
+      }
+
       const createdForNodes: HTMLElement[] = [];
 
       reactiveFor.forEach((data: any) => {
@@ -227,22 +238,17 @@ export default class RenderVDOM {
       });
 
       if (createdForNodes.length > 0) {
-        debugger;
         vdom.el = createdForNodes;
       }
 
-      if (nodes) {
-        for (const node of nodes) {
-          if (
-            node[0] === PatchNodeType.PATCH_FOR &&
-            node[1] === vdom.el &&
-            node[2] === this.componentName
-          )
-            return;
-        }
-
-        nodes.push([PatchNodeType.PATCH_FOR, vdom, this.componentName]);
+      if (!nodes || !vdom.el) {
+        console.error(
+          `Wrong nodes array - ${nodes} or undefined dom element - ${vdom.el}`
+        );
+        return;
       }
+
+      nodes.push([PatchNodeType.PATCH_FOR, vdom.el, this.componentName]);
 
       return;
     }

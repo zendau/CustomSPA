@@ -16,6 +16,7 @@ import {
 } from "./utils/domUtils";
 import debounce from "./utils/debounce";
 import { ExternalModuleInterface } from "./libs/router";
+import removeArrayObject from "./utils/removeArrayObject";
 
 export class SPA {
   [x: string]: any;
@@ -115,14 +116,16 @@ export class SPA {
 
     if (!nodes) return;
 
-    console.log("#######", nodes);
+    for (const item of [...nodes]) {
+      debugger;
 
-    nodes.forEach(([type, node, componentName]) => {
+      const [type, node, componentName] = item;
+
       const updatedComponent = SPA.components.get(componentName);
 
       if (!updatedComponent) {
         console.error(`component - ${componentName} is not found`);
-        return;
+        continue;
       }
 
       if (updatedComponent?.onBeforeUpdate) {
@@ -138,9 +141,10 @@ export class SPA {
         if (value) {
           const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node);
 
-          if (!insertNode) return;
+          if (!insertNode) continue;
 
           updatedComponent.rerender(insertNode);
+          removeArrayObject(nodes, item)
         } else {
           node.remove();
 
@@ -156,13 +160,13 @@ export class SPA {
           console.error(
             `component name - ${node} is not valid. Must be string value`
           );
-          return;
+          continue;
         }
         const component = SPA.components.get(node as string);
 
         if (!component) {
           console.error(`component - ${node} is not found`);
-          return;
+          continue;
         }
 
         if (value) {
@@ -171,7 +175,7 @@ export class SPA {
             node
           );
 
-          if (!insertNode) return;
+          if (!insertNode) continue;
 
           component.rerender(insertNode);
         } else {
@@ -185,17 +189,18 @@ export class SPA {
 
         const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node[0]);
 
-        if (!insertNode) return;
+        if (!insertNode) continue;
 
         console.log("!!!@!@", insertNode, SPA.components);
 
         updatedComponent.rerender(insertNode);
+        removeArrayObject(nodes, item)
       }
 
       if (updatedComponent?.onUpdate) {
         updatedComponent.onUpdate();
       }
-    });
+    }
   }
 
   public mount(root: HTMLElement | null) {
