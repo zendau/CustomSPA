@@ -1,5 +1,6 @@
 import { SPA } from "@SPA";
 import App from "@app/components/App";
+import PageNotFound from "@app/components/PageNotFound";
 import TestPage from "@app/components/TestPage";
 import { Emmiter } from "@core/Emitter";
 import { FnComponent } from "@core/interfaces/componentType";
@@ -29,15 +30,27 @@ const routes: IRoute[] = [
     param: { value: "id", param: { value: "q", param: { value: "w" } } },
     component: TestPage,
   },
+  {
+    path: "/404",
+    component: PageNotFound,
+  },
 ];
 
 class Router implements ExternalModuleInterface {
   private routes!: IRoute[];
   private currentRoute!: IRoute;
   private currentParams!: Record<string, string>;
+  private pageNotFound!: IRoute;
 
   constructor(routes: IRoute[]) {
     this.routes = routes;
+    this.currentRoute = {} as IRoute;
+
+    const pageNotFound = this.findRoute("/404");
+
+    if (pageNotFound) {
+      this.pageNotFound = pageNotFound;
+    }
 
     Emmiter.getInstance().subscribe("router:route", this.route.bind(this));
     Emmiter.getInstance().subscribe("router:router", this.router.bind(this));
@@ -54,8 +67,12 @@ class Router implements ExternalModuleInterface {
       (route) => route.path === `/${pathArgs[0]}`
     );
 
-    if (!routeData) return;
+    if (!routeData) {
+      this.currentRoute.path = pathname;
+      return this.pageNotFound;
+    }
 
+    this.currentRoute = routeData;
     this.currentParams = {};
 
     let routeParam = routeData.param;
@@ -76,8 +93,6 @@ class Router implements ExternalModuleInterface {
 
     if (!route) return;
 
-    this.currentRoute = route;
-
     return route.component;
   }
 
@@ -88,9 +103,6 @@ class Router implements ExternalModuleInterface {
       console.warn(`Route - ${route} not found`);
       return;
     }
-    console.log("TEST PUSH", route);
-
-    this.currentRoute = route;
 
     Emmiter.getInstance().emit(
       "app:setupComponent",
