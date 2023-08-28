@@ -20,6 +20,6 @@ export interface IVDOMElement {
   tag: string;
   children?: IVDOMElement[];
   componentId?: string;
-  slot?: any;
+  slot?: IVDOMElement;
   parentComponent?: string;
 }

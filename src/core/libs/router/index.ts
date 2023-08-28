@@ -4,9 +4,15 @@ import TestPage from "@app/components/TestPage";
 import { Emmiter } from "@core/Emitter";
 import { FnComponent } from "@core/interfaces/componentType";
 
+interface IRouterParam {
+  value: string;
+  param?: IRouterParam;
+}
+
 interface IRoute {
   path: string;
   component: FnComponent;
+  param?: IRouterParam;
   children?: IRoute[];
   meta?: Record<string, any>;
 }
@@ -18,12 +24,17 @@ export interface ExternalModuleInterface {
 
 const routes: IRoute[] = [
   { path: "/", component: App },
-  { path: "/test", component: TestPage },
+  {
+    path: "/test",
+    param: { value: "id", param: { value: "q", param: { value: "w" } } },
+    component: TestPage,
+  },
 ];
 
 class Router implements ExternalModuleInterface {
   private routes!: IRoute[];
   private currentRoute!: IRoute;
+  private currentParams!: Record<string, string>;
 
   constructor(routes: IRoute[]) {
     this.routes = routes;
@@ -35,15 +46,31 @@ class Router implements ExternalModuleInterface {
   }
 
   private findRoute(pathname: string) {
-    const routeData = this.routes.find((route) => route.path === pathname);
+    debugger;
+
+    const pathArgs = pathname.split("/").splice(1);
+
+    const routeData = this.routes.find(
+      (route) => route.path === `/${pathArgs[0]}`
+    );
+
+    if (!routeData) return;
+
+    this.currentParams = {};
+
+    let routeParam = routeData.param;
+
+    for (let i = 1; i < pathArgs.length; i++) {
+      if (!routeParam) break;
+
+      this.currentParams[routeParam.value] = pathArgs[i];
+      routeParam = routeParam.param;
+    }
 
     return routeData;
   }
 
   public init(app: SPA) {
-
-    console.log('INIT ROUTER', app)
-
     const { pathname, hash, href, origin } = window.location;
     const route = this.findRoute(pathname);
 
@@ -110,6 +137,7 @@ class Router implements ExternalModuleInterface {
     return {
       path: this.currentRoute.path,
       meta: this.currentRoute.meta,
+      params: this.currentParams,
     };
   }
 

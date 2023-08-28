@@ -6,6 +6,8 @@ import Link from "@core/libs/router/components/Link";
 const TestPage: FnComponent = () => {
   const router = useRouter();
 
+  console.log('router', router)
+
   function test() {
     router.push("/");
   }
