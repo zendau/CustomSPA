@@ -117,8 +117,6 @@ export class SPA {
     if (!nodes) return;
 
     for (const item of [...nodes]) {
-      debugger;
-
       const [type, node, componentName] = item;
 
       const updatedComponent = SPA.components.get(componentName);
@@ -144,7 +142,7 @@ export class SPA {
           if (!insertNode) continue;
 
           updatedComponent.rerender(insertNode);
-          removeArrayObject(nodes, item)
+          removeArrayObject(nodes, item);
         } else {
           node.remove();
 
@@ -194,7 +192,7 @@ export class SPA {
         console.log("!!!@!@", insertNode, SPA.components);
 
         updatedComponent.rerender(insertNode);
-        removeArrayObject(nodes, item)
+        removeArrayObject(nodes, item);
       }
 
       if (updatedComponent?.onUpdate) {
@@ -208,11 +206,19 @@ export class SPA {
 
     SPA.root = root;
 
-    if (this.modules.has("router")) {
-      console.log("HAS ROUTER");
+    let component = this.rootComponent;
+
+    const router = this.modules.get("router");
+
+    if (router && router.currentRoute) {
+      console.log("HAS ROUTER", router);
+
+      const route = router.currentRoute;
+
+      component = route.component;
     }
 
-    this.setupComponent(this.rootComponent, root, null, "append");
+    this.setupComponent(component, root, null, "append");
   }
 
   public use(name: string, module: ExternalModuleInterface) {

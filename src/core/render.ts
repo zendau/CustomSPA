@@ -99,6 +99,8 @@ export default class RenderVDOM {
         node.before(child);
       }
     } else if (type === "replace") {
+      node.replaceChildren(...tempContainer.children);
+      console.log("REPLACE", node, tempContainer);
     }
   }
 
@@ -199,7 +201,6 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
-      debugger;
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
@@ -209,9 +210,8 @@ export default class RenderVDOM {
         const removeNode = nodes.find((node) => node[1] === vdom.el);
 
         if (removeNode) {
-          removeArrayObject(nodes, removeNode)
+          removeArrayObject(nodes, removeNode);
         }
-
       }
 
       const createdForNodes: HTMLElement[] = [];
