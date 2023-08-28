@@ -11,6 +11,7 @@ interface IVDOMProps {
   componentProps: IComponentProps;
   if: string;
   for: string[];
+  href: string;
 }
 
 export interface IVDOMElement {
@@ -19,5 +20,6 @@ export interface IVDOMElement {
   tag: string;
   children?: IVDOMElement[];
   componentId?: string;
+  slot?: any;
   parentComponent?: string;
 }

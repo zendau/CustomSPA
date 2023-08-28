@@ -33,7 +33,20 @@ export default class RenderVDOM {
       .map((item) => item.slice(1, -1));
 
     for (const reactiveData of checkSplit) {
+      debugger;
       if (!reactiveData) continue;
+
+      if (reactiveData === "children") {
+        if (this.componentProps?.data && this.componentProps.data["children"]) {
+          const childVDOM = this.componentProps.data["children"];
+          console.log("SLOT VALUE HERE", childVDOM);
+
+          this.insertVDOM(childVDOM, el, "append");
+        }
+
+        continue;
+      }
+
       let reactiveVariable: string | undefined = reactiveData;
 
       const isReactive = checkReactive.indexOf(reactiveData);
@@ -109,6 +122,11 @@ export default class RenderVDOM {
 
     const isEmptyTag = !vdom.tag;
 
+    if (vdom.slot) {
+      debugger;
+      console.log("RENDER SLOT", vdom.slot);
+    }
+
     if (this.componentProps?.components) {
       const ifReactive =
         vdom.props.if !== undefined
@@ -166,6 +184,10 @@ export default class RenderVDOM {
 
     if (vdom.props.class) {
       el.classList.add(...vdom.props.class);
+    }
+
+    if (vdom.props.href) {
+      (el as HTMLAnchorElement).href = vdom.props.href;
     }
 
     if (vdom.props.if) {

@@ -57,6 +57,8 @@ export class SPA {
     const render = new RenderVDOM(componentName, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
+    console.log('VDOM', vdom)
+
     render.insertVDOM(vdom, root, type);
 
     if (props?.onMounted) {

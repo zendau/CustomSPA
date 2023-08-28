@@ -41,6 +41,9 @@ class Router implements ExternalModuleInterface {
   }
 
   public init(app: SPA) {
+
+    console.log('INIT ROUTER', app)
+
     const { pathname, hash, href, origin } = window.location;
     const route = this.findRoute(pathname);
 

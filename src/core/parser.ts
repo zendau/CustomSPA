@@ -53,7 +53,6 @@ export default class Parser {
       }
 
       if (atr.includes("if")) {
-
         const ifValue = atr.split("=")[1].replace(/["']/g, "");
 
         vdom.props.if = ifValue;
@@ -109,6 +108,12 @@ export default class Parser {
           console.error(`Unknown type ${eventType} on tag ${vdom.tag}`);
         }
       }
+
+      if (atr.includes("href")) {
+        console.log("HREF", atr);
+        const atrValue = atr.split("=");
+        vdom.props.href = atrValue[1].replace(/["']/g, "");
+      }
     }
   }
 
@@ -124,7 +129,6 @@ export default class Parser {
     vdom.props.componentProps = {};
 
     for (let item of componentData) {
-
       let [key, value] = item.split("=");
       value = value.replace(/["']/g, "");
 
@@ -165,6 +169,7 @@ export default class Parser {
         props: {},
       };
       let tag = this.HTMLBody[i];
+      // debugger;
 
       if (!tag) continue;
 
@@ -176,12 +181,44 @@ export default class Parser {
 
       this.tempTag = tagTitle;
       vdom.tag = tagTitle;
+
+      const componentTitle =
+        tagTitle.charAt(0) === "/" ? tagTitle.substring(1) : tagTitle;
+
       if (
         this.componentProps?.components &&
-        Object.keys(this.componentProps.components).indexOf(tagTitle) !== -1
+        Object.keys(this.componentProps.components).indexOf(componentTitle) !==
+          -1
       ) {
-        this.getComponentProps(tag, vdom);
-        roomVDOM.children?.push(vdom);
+        if (tagData[0].charAt(tagData[0].length - 1) === "/") {
+          console.log("COMPONENT WITHOUT SLOT");
+          this.getComponentProps(tag, vdom);
+          roomVDOM.children?.push(vdom);
+        } else {
+          if (tagData[0].charAt(0) === "/") {
+            console.log("END SLOT");
+            return {
+              pos: i,
+              vdome: roomVDOM,
+            };
+          } else {
+            console.log("COMPONENT WITH SLOT");
+            this.getComponentProps(tag, vdom);
+            debugger;
+            const slotData = this.HTMLParser(i + 1, tagTitle);
+
+            if (slotData && "pos" in slotData && slotData.vdome.children) {
+              i = slotData.pos;
+
+              if (!vdom.props.componentProps) vdom.props.componentProps = {};
+
+              vdom.props.componentProps.children = slotData.vdome;
+            }
+
+            roomVDOM.children?.push(vdom);
+          }
+        }
+
         continue;
       }
 
