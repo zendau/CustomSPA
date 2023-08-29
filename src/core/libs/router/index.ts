@@ -2,6 +2,7 @@ import { SPA } from "@SPA";
 import App from "@app/components/App";
 import PageNotFound from "@app/components/PageNotFound";
 import TestPage from "@app/components/TestPage";
+import TestPageNested from "@app/components/TestPageNested";
 import { Emmiter } from "@core/Emitter";
 import { FnComponent } from "@core/interfaces/componentType";
 
@@ -16,6 +17,7 @@ interface IRoute {
   param?: IRouterParam;
   children?: IRoute[];
   meta?: Record<string, any>;
+  isNestedPatams?: boolean;
 }
 
 export interface ExternalModuleInterface {
@@ -28,6 +30,14 @@ const routes: IRoute[] = [
   {
     path: "/test",
     param: { value: "id", param: { value: "q", param: { value: "w" } } },
+    children: [
+      {
+        path: "/nested",
+        component: TestPageNested,
+        param: { value: "category" },
+        isNestedPatams: true,
+      },
+    ],
     component: TestPage,
   },
   {
@@ -63,7 +73,7 @@ class Router implements ExternalModuleInterface {
 
     const pathArgs = pathname.split("/").splice(1);
 
-    const routeData = this.routes.find(
+    let routeData = this.routes.find(
       (route) => route.path === `/${pathArgs[0]}`
     );
 
@@ -72,17 +82,34 @@ class Router implements ExternalModuleInterface {
       return this.pageNotFound;
     }
 
-    this.currentRoute = routeData;
     this.currentParams = {};
 
     let routeParam = routeData.param;
 
     for (let i = 1; i < pathArgs.length; i++) {
-      if (!routeParam) break;
+      if (!routeParam) {
+        if (routeData && routeData.children && routeData.children.length > 0) {
+          const childRouteData = routeData.children.find(
+            (route) => route.path === `/${pathArgs[i]}`
+          ) as IRoute | undefined;
+
+          if (!childRouteData) break;
+
+          if (!childRouteData.isNestedPatams) {
+            this.currentParams = {};
+          }
+
+          routeData = childRouteData;
+          routeParam = childRouteData.param;
+        }
+        continue;
+      }
 
       this.currentParams[routeParam.value] = pathArgs[i];
       routeParam = routeParam.param;
     }
+
+    this.currentRoute = routeData;
 
     return routeData;
   }

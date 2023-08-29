@@ -12,7 +12,7 @@ const Link: FnComponent<ILinkProps> = ({ to, children }) => {
 
   function test(e: MouseEvent) {
     e.preventDefault();
-    router.push("/");
+    router.push(to);
   }
 
   const body = `<a @click='test' href="${to}">{children}</a>`;
