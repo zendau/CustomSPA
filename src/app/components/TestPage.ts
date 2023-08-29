@@ -6,7 +6,7 @@ import Link from "@core/libs/router/components/Link";
 const TestPage: FnComponent = () => {
   const router = useRouter();
 
-  console.log('router', router)
+  console.log("router", router);
 
   function test() {
     router.push("/");
@@ -18,6 +18,7 @@ const TestPage: FnComponent = () => {
     <p>param: id - {id}</p>
     <p>param: q - {q}</p>
     <p>param: w - {w}</p>
+    <p>props: test - {routeProps.test}</p>
     <div>
     <Link to='/'/>
     <Link to='/'><h1>TEST VALUE</h1></Link>
@@ -34,6 +35,7 @@ const TestPage: FnComponent = () => {
         id: router.currentRoute.params.id,
         q: router.currentRoute.params.q,
         w: router.currentRoute.params.w,
+        routeProps: router.currentRoute.props,
       },
       components: { Link },
     },

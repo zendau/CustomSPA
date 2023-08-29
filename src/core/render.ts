@@ -32,7 +32,7 @@ export default class RenderVDOM {
       .match(reactiveRegex)!
       .map((item) => item.slice(1, -1));
 
-    for (const reactiveData of checkSplit) {
+    for (let reactiveData of checkSplit) {
       debugger;
       if (!reactiveData) continue;
 
@@ -57,13 +57,18 @@ export default class RenderVDOM {
         if (reactiveData.includes(".")) {
           const dotReactiveData = reactiveData.split(".");
 
-          reactiveVariable = dotReactiveData.reduce(
-            (prev, curr) => prev[curr],
-            this.componentProps.data
-          ) as unknown as string | undefined;
+          try {
+            reactiveVariable = dotReactiveData.reduce(
+              (prev, curr) => prev[curr],
+              this.componentProps.data
+            ) as unknown as string | undefined;
+          } catch {
+            reactiveVariable = undefined;
+          }
 
+          reactiveData = dotReactiveData[0]
           nodes = reactiveNodes.get(
-            this.componentProps.data[dotReactiveData[0]]
+            this.componentProps.data[reactiveData]
           );
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
@@ -72,11 +77,15 @@ export default class RenderVDOM {
         }
       }
 
-      if (!reactiveVariable) {
+      if (
+        !reactiveVariable &&
+        this.componentProps?.data &&
+        !this.componentProps.data.hasOwnProperty(reactiveData)
+      ) {
         console.error(`unknown reactive value ${reactiveData} in ${tagData}`);
         return;
       }
-      const textNode = document.createTextNode(reactiveVariable);
+      const textNode = document.createTextNode(reactiveVariable + "");
 
       if (nodes) {
         nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);

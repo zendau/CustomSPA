@@ -9,7 +9,7 @@ const TestPageNested: FnComponent = () => {
   console.log("router", router);
 
   function test() {
-    router.push("/");
+    router.push("/test", { test: "propsQWW@" });
   }
 
   const body = `
@@ -24,7 +24,10 @@ const TestPageNested: FnComponent = () => {
 
   return [
     body,
-    { data: { test, category: router.currentRoute.params.category }, components: { Link } },
+    {
+      data: { test, category: router.currentRoute.params.category },
+      components: { Link },
+    },
   ];
 };
 

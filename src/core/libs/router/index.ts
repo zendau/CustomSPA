@@ -16,7 +16,7 @@ interface IRoute {
   component: FnComponent;
   param?: IRouterParam;
   children?: IRoute[];
-  meta?: Record<string, any>;
+  props?: Record<string, any>;
   isNestedPatams?: boolean;
 }
 
@@ -123,8 +123,13 @@ class Router implements ExternalModuleInterface {
     return route.component;
   }
 
-  private replacePage(path: string) {
+  private replacePage(path: string, props?: Record<string, any>) {
     const route = this.findRoute(path);
+
+    if (props) {
+      if (!this.currentRoute.props) this.currentRoute.props = {};
+      this.currentRoute.props = { ...this.currentRoute.props, ...props };
+    }
 
     if (!route) {
       console.warn(`Route - ${route} not found`);
@@ -150,9 +155,9 @@ class Router implements ExternalModuleInterface {
     this.replacePage(pathname);
   }
 
-  private push(path: string) {
+  private push(path: string, props: Record<string, any>) {
     window.history.pushState({}, "", path);
-    this.replacePage(path);
+    this.replacePage(path, props);
   }
 
   private replace(path: string) {
@@ -175,7 +180,7 @@ class Router implements ExternalModuleInterface {
   private route() {
     return {
       path: this.currentRoute.path,
-      meta: this.currentRoute.meta,
+      props: this.currentRoute.props,
       params: this.currentParams,
     };
   }
