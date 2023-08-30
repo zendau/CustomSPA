@@ -4,7 +4,9 @@ import PageNotFound from "@app/components/PageNotFound";
 import TestPage from "@app/components/TestPage";
 import TestPageNested from "@app/components/TestPageNested";
 import { Emmiter } from "@core/Emitter";
+import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { FnComponent } from "@core/interfaces/componentType";
+import { clearNodes } from "@core/utils/domUtils";
 
 interface IRouterParam {
   value: string;
@@ -69,8 +71,6 @@ class Router implements ExternalModuleInterface {
   }
 
   private findRoute(pathname: string) {
-    debugger;
-
     const pathArgs = pathname.split("/").splice(1);
 
     let routeData = this.routes.find(
@@ -87,6 +87,8 @@ class Router implements ExternalModuleInterface {
     let routeParam = routeData.param;
 
     for (let i = 1; i < pathArgs.length; i++) {
+      if (!pathArgs[i]) continue;
+
       if (!routeParam) {
         if (routeData && routeData.children && routeData.children.length > 0) {
           const childRouteData = routeData.children.find(
@@ -124,6 +126,18 @@ class Router implements ExternalModuleInterface {
   }
 
   private replacePage(path: string, props?: Record<string, any>) {
+    console.log("PREV ROUTE UNMOUNTED", this.currentRoute, [...SPA.components]);
+    debugger;
+
+    // const componentsVDOM: IVDOMElement[] = [];
+
+    // debugger
+
+    SPA.components.forEach((component) => {
+      if (component.onUnmounted) component.onUnmounted();
+    });
+
+    SPA.components.clear()
     const route = this.findRoute(path);
 
     if (props) {

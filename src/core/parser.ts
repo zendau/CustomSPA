@@ -169,7 +169,6 @@ export default class Parser {
         props: {},
       };
       let tag = this.HTMLBody[i];
-      // debugger;
 
       if (!tag) continue;
 
@@ -204,7 +203,6 @@ export default class Parser {
           } else {
             console.log("COMPONENT WITH SLOT");
             this.getComponentProps(tag, vdom);
-            debugger;
             const slotData = this.HTMLParser(i + 1, tagTitle);
 
             if (slotData && "pos" in slotData && slotData.vdome.children) {

@@ -33,7 +33,6 @@ export default class RenderVDOM {
       .map((item) => item.slice(1, -1));
 
     for (let reactiveData of checkSplit) {
-      debugger;
       if (!reactiveData) continue;
 
       if (reactiveData === "children") {
@@ -132,7 +131,6 @@ export default class RenderVDOM {
     const isEmptyTag = !vdom.tag;
 
     if (vdom.slot) {
-      debugger;
       console.log("RENDER SLOT", vdom.slot);
     }
 

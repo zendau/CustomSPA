@@ -38,6 +38,7 @@ const TestPage: FnComponent = () => {
         routeProps: router.currentRoute.props,
       },
       components: { Link },
+      onUnmounted: () => console.log('UNMOUNTED TEST PAGE')
     },
   ];
 };
