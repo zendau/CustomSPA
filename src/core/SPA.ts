@@ -15,15 +15,15 @@ import {
   findNeighborVDOMNode,
 } from "./utils/domUtils";
 import debounce from "./utils/debounce";
-import { ExternalModuleInterface } from "./libs/router";
 import removeArrayObject from "./utils/removeArrayObject";
+import IExternalModule from "./interfaces/IExternalModule";
 
 export class SPA {
   [x: string]: any;
   public static root: HTMLElement;
   private emitter!: Emmiter;
   public static components = new Map<string, ICreatedComponent>();
-  private modules = new Map<string, ExternalModuleInterface>();
+  private modules = new Map<string, IExternalModule>();
   private rootComponent!: FnComponent;
 
   constructor(rootComponent: FnComponent) {
@@ -221,7 +221,7 @@ export class SPA {
     this.setupComponent(component, root, null, "append");
   }
 
-  public use(name: string, module: ExternalModuleInterface) {
+  public use(name: string, module: IExternalModule) {
     this.modules.set(name, module);
     module.init(this);
 

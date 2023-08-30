@@ -1,4 +1,3 @@
-import { ref } from "@SPA";
 import { FnComponent } from "../../core/interfaces/componentType";
 import { useRouter } from "@core/libs/router";
 import Link from "@core/libs/router/components/Link";

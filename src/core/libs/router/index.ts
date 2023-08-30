@@ -1,54 +1,9 @@
 import { SPA } from "@SPA";
-import App from "@app/components/App";
-import PageNotFound from "@app/components/PageNotFound";
-import TestPage from "@app/components/TestPage";
-import TestPageNested from "@app/components/TestPageNested";
 import { Emmiter } from "@core/Emitter";
-import { IVDOMElement } from "@core/interfaces/IVDOMElement";
-import { FnComponent } from "@core/interfaces/componentType";
-import { clearNodes } from "@core/utils/domUtils";
+import IExternalModule from "@core/interfaces/IExternalModule";
+import { IRoute } from "./interfaces/IRoute";
 
-interface IRouterParam {
-  value: string;
-  param?: IRouterParam;
-}
-
-interface IRoute {
-  path: string;
-  component: FnComponent;
-  param?: IRouterParam;
-  children?: IRoute[];
-  props?: Record<string, any>;
-  isNestedPatams?: boolean;
-}
-
-export interface ExternalModuleInterface {
-  [x: string]: any;
-  init(app: SPA): void;
-}
-
-const routes: IRoute[] = [
-  { path: "/", component: App },
-  {
-    path: "/test",
-    param: { value: "id", param: { value: "q", param: { value: "w" } } },
-    children: [
-      {
-        path: "/nested",
-        component: TestPageNested,
-        param: { value: "category" },
-        isNestedPatams: true,
-      },
-    ],
-    component: TestPage,
-  },
-  {
-    path: "/404",
-    component: PageNotFound,
-  },
-];
-
-class Router implements ExternalModuleInterface {
+export class Router implements IExternalModule {
   private routes!: IRoute[];
   private currentRoute!: IRoute;
   private currentParams!: Record<string, string>;
@@ -126,18 +81,11 @@ class Router implements ExternalModuleInterface {
   }
 
   private replacePage(path: string, props?: Record<string, any>) {
-    console.log("PREV ROUTE UNMOUNTED", this.currentRoute, [...SPA.components]);
-    debugger;
-
-    // const componentsVDOM: IVDOMElement[] = [];
-
-    // debugger
-
     SPA.components.forEach((component) => {
       if (component.onUnmounted) component.onUnmounted();
     });
 
-    SPA.components.clear()
+    SPA.components.clear();
     const route = this.findRoute(path);
 
     if (props) {
@@ -218,5 +166,3 @@ export function useRoute() {
 export function useRouter() {
   return Emmiter.getInstance().emit("router:router");
 }
-
-export const AppRouter = new Router(routes);
