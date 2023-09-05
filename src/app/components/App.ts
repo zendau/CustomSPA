@@ -1,11 +1,13 @@
 import { reactivity, ref } from "@SPA";
 import { FnComponent } from "@core/interfaces/componentType";
 import SecondComponent from "@app/components/SecondComponent";
+import { useStore } from "@app/store";
 
 const App: FnComponent = () => {
   const testRef = ref(2);
   const testIf = ref(true);
 
+  const t = useStore()
   // console.log('testRef', testRef)
 
   // const testRef2 = reactivity({ number: { test: 2 } });
