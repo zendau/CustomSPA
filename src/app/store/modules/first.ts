@@ -1,15 +1,16 @@
-import createModule from "@core/libs/store/createStore";
+import createModule from "@core/libs/store/createModule";
 
 const state = {
-  t: "a",
+  t: "hello world",
 };
 
 const actions = {
   add(store: { state: any; actions: any }, a: number, b: number): any {
     console.log("test", store, a, b);
   },
-  multiply(x: number, y: number): number[] {
-    return [x, y];
+  changeText(store: any) {
+    debugger;
+    store.state.t = "CHANGED TEXT";
   },
 };
 

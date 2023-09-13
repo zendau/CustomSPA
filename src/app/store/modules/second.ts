@@ -1,4 +1,4 @@
-import createModule from "@core/libs/store/createStore";
+import createModule from "@core/libs/store/createModule";
 
 const state = {
   name: "John",

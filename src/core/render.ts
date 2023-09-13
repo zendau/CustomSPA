@@ -1,9 +1,11 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
-import { reactiveNodes } from "@core/reactivity";
+import { reactiveNodes, simpleReactiveVar } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
+import { useStore } from "@app/store";
+import checkPrimitiveDataType from "./utils/checkPrimitiveDataType";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
@@ -19,6 +21,8 @@ export default class RenderVDOM {
 
   private getTagValue(tagData: string, el: HTMLElement) {
     const reactiveRegex = /\{([^}]+)\}/g;
+    debugger;
+    const store = useStore();
 
     const checkSplit = tagData.split(reactiveRegex);
 
@@ -65,14 +69,16 @@ export default class RenderVDOM {
             reactiveVariable = undefined;
           }
 
-          reactiveData = dotReactiveData[0]
-          nodes = reactiveNodes.get(
-            this.componentProps.data[reactiveData]
-          );
+          reactiveData = dotReactiveData[0];
+          nodes = reactiveNodes.get(this.componentProps.data[reactiveData]);
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
 
-          nodes = reactiveNodes.get(reactiveVariable as unknown as object);
+          if (Object.prototype.hasOwnProperty.call(reactiveVariable, "_root")) {
+            nodes = reactiveNodes.get((reactiveVariable as any)["_root"]);
+          } else {
+            nodes = reactiveNodes.get(reactiveVariable as unknown as object);
+          }
         }
       }
 
@@ -84,6 +90,29 @@ export default class RenderVDOM {
         console.error(`unknown reactive value ${reactiveData} in ${tagData}`);
         return;
       }
+
+      // if (
+      //   checkPrimitiveDataType(reactiveVariable) &&
+      //   this.componentProps?.data &&
+      //   this.componentProps.data.hasOwnProperty(reactiveData) &&
+      //   simpleReactiveVar &&
+      //   !nodes
+      // ) {
+
+      //   simpleReactiveVar.value = null;
+      // }
+
+      // debugger
+
+      // if (
+      //   reactiveVariable?.length &&
+      //   reactiveVariable.length === 3 &&
+      //   reactiveVariable[0] === "SIMPLE_VALUE"
+      // ) {
+      //   nodes = reactiveNodes.get(reactiveVariable[2] as unknown as object);
+      //   reactiveVariable = reactiveVariable[1];
+      // }
+
       const textNode = document.createTextNode(reactiveVariable + "");
 
       if (nodes) {
@@ -230,6 +259,8 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
+      debugger;
+
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 

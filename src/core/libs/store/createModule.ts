@@ -1,9 +1,16 @@
-import { IModule, IStore, RemoveFirstParameter, _ActionsTree } from "./interfaces";
+import { reactivity } from "@SPA";
+import {
+  IModule,
+  IStore,
+  RemoveFirstParameter,
+  _ActionsTree,
+} from "./interfaces";
 
 export default function createModule<State, Actions extends _ActionsTree>(
   options: IStore<State, Actions>
 ): IModule<State, Actions> {
-  const initialState = { ...options.state };
+  debugger;
+  const initialState = reactivity(options.state as object) as State;
   const proxyObject: any = {};
 
   for (const key in options.actions) {
