@@ -7,7 +7,7 @@ import {
 import Parser from "@core/Parser";
 import RenderVDOM from "@core/Render";
 import { Emmiter } from "@core/Emitter";
-import { reactiveNodes, reactiveProxy } from "./reactivity";
+import { depComputed, reactiveNodes, reactiveProxy } from "./reactivity";
 import { PatchNodeType, insertVDOMType } from "./interfaces/typeNodes";
 import {
   clearNodes,
@@ -105,7 +105,22 @@ export class SPA {
     console.log(SPA.components);
   }
 
-  public static updateNodes(obj: object, value: any) {
+  public static updateNodes(obj: object, value: any, target?: object) {
+    debugger;
+
+    if (depComputed.has(obj)) {
+      const computedValues = depComputed.get(obj);
+
+      for (let item of computedValues) {
+        if (!item) continue;
+
+        if (item[0] === target) {
+          console.log("should update", item[1]());
+          SPA.updateNodes(item[1], item[1]());
+        }
+      }
+    }
+
     const proxy = reactiveProxy.get(obj);
     if (!proxy) {
       console.error(`proxy object not found ${obj}`);

@@ -23,11 +23,13 @@ const App: FnComponent = () => {
   }
 
   function changeStoreText2() {
-    testRef2.number.test = 3;
+    testRef2.number.test++;
   }
 
   const body = /*html*/ `
   <>
+    <h3>Test dot text value - {testDot}</h3>
+    <button @click='changeStoreText2'>change text</button>
     <p class='box find'>{testRef}</p>
     <div>
     <button id='test' @click='testInc'>Inc</button>
@@ -41,8 +43,6 @@ const App: FnComponent = () => {
     <h3>Test store text value - {textValue.first.state.t}</h3>
     <button @click='changeStoreText'>change text</button>
 
-    <h3>Test dot text value - {testDot}</h3>
-    <button @click='changeStoreText2'>change text</button>
   </>`;
 
   function testInc() {
@@ -61,7 +61,7 @@ const App: FnComponent = () => {
       data: {
         testIf,
         testRef,
-        testDot: computed(() => testRef2.number.test),
+        testDot: computed(() => testRef2.number.test * testRef.value),
         testDot2: testRef2.number.test,
         changeIf,
         testInc,
