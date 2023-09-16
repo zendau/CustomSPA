@@ -27,7 +27,7 @@ const TestPage: FnComponent = () => {
     </>`;
 
   return [
-    body,
+    { template: body },
     {
       data: {
         test,
@@ -37,7 +37,7 @@ const TestPage: FnComponent = () => {
         routeProps: router.currentRoute.props,
       },
       components: { Link },
-      onUnmounted: () => console.log('UNMOUNTED TEST PAGE')
+      onUnmounted: () => console.log("UNMOUNTED TEST PAGE"),
     },
   ];
 };

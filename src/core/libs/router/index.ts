@@ -85,6 +85,12 @@ export class Router implements IExternalModule {
       if (component.onUnmounted) component.onUnmounted();
     });
 
+    const styleTagsWithId = document.querySelectorAll("style[id]");
+
+    styleTagsWithId.forEach((styleTag) => {
+      styleTag.remove();
+    });
+
     SPA.components.clear();
     const route = this.findRoute(path);
 

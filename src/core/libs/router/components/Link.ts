@@ -17,7 +17,7 @@ const Link: FnComponent<ILinkProps> = ({ to, children }) => {
 
   const body = `<a @click='test' href="${to}">{children}</a>`;
 
-  return [body, { data: { test, children } }];
+  return [{ template: body }, { data: { test, children } }];
 };
 
 export default Link;

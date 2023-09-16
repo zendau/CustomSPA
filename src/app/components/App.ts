@@ -42,8 +42,16 @@ const App: FnComponent = () => {
     <h1>END</h1>
     <h3>Test store text value - {textValue.first.state.t}</h3>
     <button @click='changeStoreText'>change text</button>
-
   </>`;
+
+  const style = /*css*/ `
+
+  button {
+    color: red;
+    font-size: 26px;
+  }
+
+  `;
 
   function testInc() {
     debugger;
@@ -55,7 +63,7 @@ const App: FnComponent = () => {
   }
 
   return [
-    body,
+    { template: body, style },
     {
       components: { SecondComponent },
       data: {

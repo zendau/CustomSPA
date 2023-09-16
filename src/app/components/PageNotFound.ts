@@ -9,7 +9,7 @@ const PageNotFound: FnComponent = () => {
     <h1>Page '{path}' not found</h1>
     </>`;
 
-  return [body, { data: { path: route.path } }];
+  return [{ template: body }, { data: { path: route.path } }];
 };
 
 export default PageNotFound;

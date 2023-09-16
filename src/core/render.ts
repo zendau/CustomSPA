@@ -1,11 +1,11 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
-import { reactiveNodes, simpleReactiveVar } from "@core/reactivity";
+import { reactiveNodes } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { IComponent } from "@core/interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
 import { useStore } from "@app/store";
-import checkPrimitiveDataType from "./utils/checkPrimitiveDataType";
+import getRandomValue from "./utils/getRandomValue";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
@@ -74,7 +74,11 @@ export default class RenderVDOM {
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
 
-          if (Object.prototype.hasOwnProperty.call(reactiveVariable, "_root")) {
+          debugger;
+          if (
+            reactiveVariable &&
+            Object.prototype.hasOwnProperty.call(reactiveVariable, "_root")
+          ) {
             nodes = reactiveNodes.get((reactiveVariable as any)["_root"]);
           } else {
             nodes = reactiveNodes.get(reactiveVariable as unknown as object);
@@ -90,28 +94,6 @@ export default class RenderVDOM {
         console.error(`unknown reactive value ${reactiveData} in ${tagData}`);
         return;
       }
-
-      // if (
-      //   checkPrimitiveDataType(reactiveVariable) &&
-      //   this.componentProps?.data &&
-      //   this.componentProps.data.hasOwnProperty(reactiveData) &&
-      //   simpleReactiveVar &&
-      //   !nodes
-      // ) {
-
-      //   simpleReactiveVar.value = null;
-      // }
-
-      // debugger
-
-      // if (
-      //   reactiveVariable?.length &&
-      //   reactiveVariable.length === 3 &&
-      //   reactiveVariable[0] === "SIMPLE_VALUE"
-      // ) {
-      //   nodes = reactiveNodes.get(reactiveVariable[2] as unknown as object);
-      //   reactiveVariable = reactiveVariable[1];
-      // }
 
       const textNode = document.createTextNode(reactiveVariable + "");
 
@@ -173,7 +155,7 @@ export default class RenderVDOM {
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
-        const componentId = window.crypto.randomUUID();
+        const componentId = getRandomValue();
         vdom.componentId = componentId;
 
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;

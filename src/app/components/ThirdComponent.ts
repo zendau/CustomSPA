@@ -22,7 +22,7 @@ const ThirdComponent: FnComponent = () => {
     </>`;
 
   return [
-    body,
+    { template: body },
     {
       data: {
         testIf,

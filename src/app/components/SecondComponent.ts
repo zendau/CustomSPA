@@ -52,7 +52,7 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test) => {
     </>`;
 
   return [
-    body,
+    { template: body },
     {
       data: {
         id: test.id,

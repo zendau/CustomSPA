@@ -28,5 +28,8 @@ export interface lastVDOMElement {
   vdom: IVDOMElement;
 }
 
-export type ComponentProps = [string, Partial<IComponent>?];
+export type ComponentProps = [
+  { template: string; style?: string },
+  Partial<IComponent>?
+];
 export type FnComponent<T = {} | undefined> = (props: T) => ComponentProps;

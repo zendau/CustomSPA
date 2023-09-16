@@ -23,7 +23,7 @@ const TestPageNested: FnComponent = () => {
     </>`;
 
   return [
-    body,
+    { template: body },
     {
       data: { test, category: router.currentRoute.params.category },
       components: { Link },

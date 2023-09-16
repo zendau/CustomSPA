@@ -17,6 +17,7 @@ import {
 import debounce from "./utils/debounce";
 import removeArrayObject from "./utils/removeArrayObject";
 import IExternalModule from "./interfaces/IExternalModule";
+import getRandomValue from "./utils/getRandomValue";
 
 export class SPA {
   [x: string]: any;
@@ -39,20 +40,28 @@ export class SPA {
   private setupComponent(
     component: FnComponent,
     root: HTMLElement,
-    componentId: string | null,
+    componentId: string,
     type: insertVDOMType,
     componentProps?: ComponentProps
   ) {
-    const [template, props] = component(componentProps);
+    const [body, props] = component(componentProps);
     const componentName = componentId
       ? `${component.name}:${componentId}`
       : component.name;
+
+    debugger;
+    if (body.style) {
+      const styleElement = document.createElement("style");
+      styleElement.innerHTML = body.style;
+      styleElement.id = componentId;
+      document.head.appendChild(styleElement);
+    }
 
     if (props?.onBeforeMounted) {
       props.onBeforeMounted();
     }
 
-    const parser = new Parser(template, props);
+    const parser = new Parser(body.template, props);
 
     const render = new RenderVDOM(componentName, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
@@ -111,12 +120,14 @@ export class SPA {
     if (depComputed.has(obj)) {
       const computedValues = depComputed.get(obj);
 
-      for (let item of computedValues) {
-        if (!item) continue;
+      if (computedValues) {
+        for (let item of computedValues) {
+          if (!item) continue;
 
-        if (item[0] === target) {
-          console.log("should update", item[1]());
-          SPA.updateNodes(item[1], item[1]());
+          if (item[0] && item[0] === target) {
+            console.log("should update", item[1]());
+            SPA.updateNodes(item[1], item[1]());
+          }
         }
       }
     }
@@ -233,7 +244,9 @@ export class SPA {
       component = route.component;
     }
 
-    this.setupComponent(component, root, null, "append");
+    const componentId = getRandomValue();
+
+    this.setupComponent(component, root, componentId, "append");
   }
 
   public use(name: string, module: IExternalModule) {
