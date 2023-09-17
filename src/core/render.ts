@@ -11,17 +11,19 @@ export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private emitter!: Emmiter;
   private componentName!: string;
+  private componentId!: string;
 
   constructor(componentName: string, componentProps?: Partial<IComponent>) {
     this.componentProps = componentProps;
     this.componentName = componentName;
+
+    this.componentId = getRandomValue();
 
     this.emitter = Emmiter.getInstance();
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
     const reactiveRegex = /\{([^}]+)\}/g;
-    debugger;
     const store = useStore();
 
     const checkSplit = tagData.split(reactiveRegex);
@@ -74,7 +76,6 @@ export default class RenderVDOM {
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
 
-          debugger;
           if (
             reactiveVariable &&
             Object.prototype.hasOwnProperty.call(reactiveVariable, "_root")
@@ -155,8 +156,7 @@ export default class RenderVDOM {
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
-        const componentId = getRandomValue();
-        vdom.componentId = componentId;
+        vdom.componentId = this.componentId;
 
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
@@ -173,7 +173,7 @@ export default class RenderVDOM {
           "app:setupComponent",
           this.componentProps?.components[vdom.tag],
           root,
-          componentId,
+          this.componentId,
           "append",
           vdom.props.componentProps
         );
@@ -186,6 +186,8 @@ export default class RenderVDOM {
 
     if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
+
+      el.dataset.c = this.componentId;
 
       if (!Array.isArray(vdom.el)) {
         vdom.el = el;
@@ -241,8 +243,6 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
-      debugger;
-
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
@@ -297,5 +297,9 @@ export default class RenderVDOM {
     if (vdom.children && vdom.children.length > 0) {
       vdom.children.forEach((child) => this.render(child, el));
     }
+  }
+
+  get componentRenderId(): string {
+    return this.componentId;
   }
 }

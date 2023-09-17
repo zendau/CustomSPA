@@ -40,7 +40,7 @@ export class SPA {
   private setupComponent(
     component: FnComponent,
     root: HTMLElement,
-    componentId: string,
+    componentId: string | null,
     type: insertVDOMType,
     componentProps?: ComponentProps
   ) {
@@ -49,24 +49,29 @@ export class SPA {
       ? `${component.name}:${componentId}`
       : component.name;
 
-    debugger;
-    if (body.style) {
-      const styleElement = document.createElement("style");
-      styleElement.innerHTML = body.style;
-      styleElement.id = componentId;
-      document.head.appendChild(styleElement);
-    }
-
-    if (props?.onBeforeMounted) {
-      props.onBeforeMounted();
-    }
-
     const parser = new Parser(body.template, props);
 
     const render = new RenderVDOM(componentName, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
     render.insertVDOM(vdom, root, type);
+
+    if (body.style) {
+      const styleElement = document.createElement("style");
+
+      const style = body.style.replace(
+        "scoped",
+        `data-c='${render.componentRenderId}'`
+      );
+
+      styleElement.innerHTML = style;
+      styleElement.id = render.componentRenderId;
+      document.head.appendChild(styleElement);
+    }
+
+    if (props?.onBeforeMounted) {
+      props.onBeforeMounted();
+    }
 
     if (props?.onMounted) {
       props.onMounted();
@@ -115,8 +120,6 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
-    debugger;
-
     if (depComputed.has(obj)) {
       const computedValues = depComputed.get(obj);
 
@@ -244,9 +247,7 @@ export class SPA {
       component = route.component;
     }
 
-    const componentId = getRandomValue();
-
-    this.setupComponent(component, root, componentId, "append");
+    this.setupComponent(component, root, null, "append");
   }
 
   public use(name: string, module: IExternalModule) {

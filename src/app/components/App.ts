@@ -46,15 +46,18 @@ const App: FnComponent = () => {
 
   const style = /*css*/ `
 
-  button {
+  button[scoped] {
     color: red;
     font-size: 26px;
+  }
+
+  button {
+    border-radius: 10%;
   }
 
   `;
 
   function testInc() {
-    debugger;
     testRef.value++;
   }
 

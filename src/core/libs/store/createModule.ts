@@ -9,7 +9,7 @@ import {
 export default function createModule<State, Actions extends _ActionsTree>(
   options: IStore<State, Actions>
 ): IModule<State, Actions> {
-  debugger;
+
   const initialState = reactivity(options.state as object) as State;
   const proxyObject: any = {};
 
