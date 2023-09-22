@@ -104,13 +104,7 @@ export class Router implements IExternalModule {
       return;
     }
 
-    Emmiter.getInstance().emit(
-      "app:setupComponent",
-      route?.component,
-      SPA.root,
-      "",
-      "replace"
-    );
+    SPA.setupComponent(route?.component, SPA.root, "", "replace", null);
   }
 
   private changeState(e: PopStateEvent) {

@@ -3,10 +3,13 @@ import { FnComponent } from "@core/interfaces/componentType";
 import SecondComponent from "@app/components/SecondComponent";
 import { useStore } from "@app/store";
 import { computed } from "@core/reactivity";
+import { provide } from "@core/ComponentThree";
 
 const App: FnComponent = () => {
   const testRef = ref(2);
   const testIf = ref(true);
+
+  provide('test', 'hello world')
 
   const store = useStore();
   // console.log('testRef', testRef)
@@ -28,6 +31,8 @@ const App: FnComponent = () => {
 
   const body = /*html*/ `
   <>
+    <h3>Test store text value - {textValue.state.t}</h3>
+    <button @click='changeStoreText'>change text</button>
     <h3>Test dot text value - {testDot}</h3>
     <button @click='changeStoreText2'>change text</button>
     <p class='box find'>{testRef}</p>
@@ -40,8 +45,7 @@ const App: FnComponent = () => {
     <button @click='changeIf'>Test if</button>
     <SecondComponent if='testIf' msg='test message' :id='testRef'/>
     <h1>END</h1>
-    <h3>Test store text value - {textValue.first.state.t}</h3>
-    <button @click='changeStoreText'>change text</button>
+
   </>`;
 
   const style = /*css*/ `
@@ -77,7 +81,7 @@ const App: FnComponent = () => {
         changeIf,
         testInc,
         testDec,
-        textValue: store,
+        textValue: store.first,
         changeStoreText,
         changeStoreText2,
       },

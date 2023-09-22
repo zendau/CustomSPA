@@ -9,6 +9,7 @@ const actions = {
     console.log("test", store, a, b);
   },
   changeText(store: any) {
+    debugger
     store.state.t = "CHANGED TEXT";
   },
 };

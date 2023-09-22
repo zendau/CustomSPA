@@ -2,20 +2,25 @@ import { IVDOMElement } from "@core/interfaces/IVDOMElement";
 import { Emmiter } from "@core/Emitter";
 import { reactiveNodes } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
-import { IComponent } from "@core/interfaces/componentType";
+import { ComponentProps, IComponent } from "@core/interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
 import { useStore } from "@app/store";
 import getRandomValue from "./utils/getRandomValue";
+import { SPA } from "./SPA";
+import { ComponentThree } from "./ComponentThree";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private emitter!: Emmiter;
-  private componentName!: string;
+  private componentThreeData!: ComponentThree;
   private componentId!: string;
 
-  constructor(componentName: string, componentProps?: Partial<IComponent>) {
+  constructor(
+    componentThreeData: ComponentThree,
+    componentProps?: Partial<IComponent>
+  ) {
     this.componentProps = componentProps;
-    this.componentName = componentName;
+    this.componentThreeData = componentThreeData;
 
     this.componentId = getRandomValue();
 
@@ -40,7 +45,6 @@ export default class RenderVDOM {
 
     for (let reactiveData of checkSplit) {
       if (!reactiveData) continue;
-
       if (reactiveData === "children") {
         if (this.componentProps?.data && this.componentProps.data["children"]) {
           const childVDOM = this.componentProps.data["children"];
@@ -72,7 +76,12 @@ export default class RenderVDOM {
           }
 
           reactiveData = dotReactiveData[0];
-          nodes = reactiveNodes.get(this.componentProps.data[reactiveData]);
+
+          const q = this.componentProps.data[reactiveData];
+
+          const v = Object.values(store).includes(q);
+
+          nodes = reactiveNodes.get(q);
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
 
@@ -99,7 +108,11 @@ export default class RenderVDOM {
       const textNode = document.createTextNode(reactiveVariable + "");
 
       if (nodes) {
-        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
+        nodes.push([
+          PatchNodeType.PATCH_VALUE,
+          textNode,
+          this.componentThreeData.value,
+        ]);
       }
 
       el.appendChild(textNode);
@@ -164,18 +177,22 @@ export default class RenderVDOM {
           ifNodes.push([
             PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
-            this.componentName,
+            this.componentThreeData.value,
           ]);
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
 
-        this.emitter.emit(
-          "app:setupComponent",
+        debugger;
+
+        console.log(SPA.components);
+
+        SPA.setupComponent(
           this.componentProps?.components[vdom.tag],
           root,
           this.componentId,
           "append",
-          vdom.props.componentProps
+          this.componentThreeData,
+          vdom.props.componentProps as ComponentProps
         );
 
         return;
@@ -222,7 +239,7 @@ export default class RenderVDOM {
         ifNodes.push([
           PatchNodeType.PATCH_IF_NODE,
           vdom.el,
-          this.componentName,
+          this.componentThreeData.value,
         ]);
 
       if (ifReactive?._isRef === true && ifReactive?.value === false) return;
@@ -290,7 +307,11 @@ export default class RenderVDOM {
         return;
       }
 
-      nodes.push([PatchNodeType.PATCH_FOR, vdom.el, this.componentName]);
+      nodes.push([
+        PatchNodeType.PATCH_FOR,
+        vdom.el,
+        this.componentThreeData.value,
+      ]);
 
       return;
     }

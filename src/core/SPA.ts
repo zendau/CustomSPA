@@ -6,7 +6,6 @@ import {
 } from "@core/interfaces/componentType";
 import Parser from "@core/Parser";
 import RenderVDOM from "@core/Render";
-import { Emmiter } from "@core/Emitter";
 import { depComputed, reactiveNodes, reactiveProxy } from "./reactivity";
 import { PatchNodeType, insertVDOMType } from "./interfaces/typeNodes";
 import {
@@ -17,12 +16,10 @@ import {
 import debounce from "./utils/debounce";
 import removeArrayObject from "./utils/removeArrayObject";
 import IExternalModule from "./interfaces/IExternalModule";
-import getRandomValue from "./utils/getRandomValue";
+import { ComponentThree, componentController } from "./ComponentThree";
 
 export class SPA {
-  [x: string]: any;
   public static root: HTMLElement;
-  private emitter!: Emmiter;
   public static components = new Map<string, ICreatedComponent>();
   private modules = new Map<string, IExternalModule>();
   private rootComponent!: FnComponent;
@@ -30,20 +27,34 @@ export class SPA {
   constructor(rootComponent: FnComponent) {
     this.rootComponent = rootComponent;
 
-    this.emitter = Emmiter.getInstance();
-    this.emitter.subscribe(
-      "app:setupComponent",
-      this.setupComponent.bind(this)
-    );
+    componentController.addComponentToThee(rootComponent.name, null);
   }
 
-  private setupComponent(
+  public static setupComponent(
     component: FnComponent,
     root: HTMLElement,
     componentId: string | null,
     type: insertVDOMType,
+    theeComponent: ComponentThree | null,
     componentProps?: ComponentProps
   ) {
+    debugger;
+
+    let componentTheeData: ComponentThree | null;
+
+    if (theeComponent) {
+      componentTheeData = componentController.addComponentToThee(
+        component.name,
+        theeComponent
+      );
+    } else {
+      componentTheeData = componentController.currentNode;
+    }
+
+    if (!componentTheeData) {
+      throw new Error("Error when rendering root element");
+    }
+
     const [body, props] = component(componentProps);
     const componentName = componentId
       ? `${component.name}:${componentId}`
@@ -51,7 +62,7 @@ export class SPA {
 
     const parser = new Parser(body.template, props);
 
-    const render = new RenderVDOM(componentName, props);
+    const render = new RenderVDOM(componentTheeData, props);
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
     render.insertVDOM(vdom, root, type);
@@ -77,10 +88,11 @@ export class SPA {
       props.onMounted();
     }
 
-    function ttt(children: IVDOMElement[] | undefined) {
+    function setParentComponent(children: IVDOMElement[] | undefined) {
       if (!children) return;
 
-      if (children.length === 1) return ttt(children[0].children);
+      if (children.length === 1)
+        return setParentComponent(children[0].children);
 
       children.forEach((child) => {
         const component = SPA.components.get(
@@ -93,7 +105,7 @@ export class SPA {
       });
     }
 
-    ttt(vdom.children);
+    setParentComponent(vdom.children);
 
     SPA.components.set(componentName, {
       vdom,
@@ -247,7 +259,13 @@ export class SPA {
       component = route.component;
     }
 
-    this.setupComponent(component, root, null, "append");
+    SPA.setupComponent(component, root, null, "append", null);
+
+    componentController.resetCurrentNode();
+  }
+
+  public appProvideData(key: string, data: any) {
+    componentController.currentNode?.addProvideValue(key, data);
   }
 
   public use(name: string, module: IExternalModule) {

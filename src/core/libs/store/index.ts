@@ -2,9 +2,15 @@ import { SPA } from "@SPA";
 import IExternalModule from "@core/interfaces/IExternalModule";
 
 class Store<T> implements IExternalModule {
-  constructor(store: T) {}
+  private appStore!: T;
 
-  public init(app: SPA) {}
+  constructor(store: T) {
+    this.appStore = store;
+  }
+
+  public init(app: SPA) {
+    app.appProvideData("store", this.appStore);
+  }
 }
 
 export default function createStore<T>(store: T) {

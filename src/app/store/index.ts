@@ -2,9 +2,9 @@ import createStore from "@core/libs/store";
 import first from "./modules/first";
 import second from "./modules/second";
 
-const { useStore } = createStore({
+const { useStore, storeInstance } = createStore({
   first,
   second,
 });
 
-export { useStore };
+export { useStore, storeInstance };
