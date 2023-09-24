@@ -1,35 +1,34 @@
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
-import { Emmiter } from "@core/Emitter";
-import { reactiveNodes } from "@core/reactivity";
+import { reactiveNodes, reactiveProxy } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { ComponentProps, IComponent } from "@core/interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
-import { useStore } from "@app/store";
 import getRandomValue from "./utils/getRandomValue";
 import { SPA } from "./SPA";
-import { ComponentThree } from "./ComponentThree";
+import { ComponentThree, inject } from "./ComponentThree";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
-  private emitter!: Emmiter;
   private componentThreeData!: ComponentThree;
   private componentId!: string;
+  private componentName!: string;
 
   constructor(
+    componentName: string,
+    componentId: string | null,
     componentThreeData: ComponentThree,
     componentProps?: Partial<IComponent>
   ) {
     this.componentProps = componentProps;
     this.componentThreeData = componentThreeData;
 
-    this.componentId = getRandomValue();
-
-    this.emitter = Emmiter.getInstance();
+    this.componentId = componentId ?? "";
+    this.componentName = componentName;
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
     const reactiveRegex = /\{([^}]+)\}/g;
-    const store = useStore();
+    const store = inject("store");
 
     const checkSplit = tagData.split(reactiveRegex);
 
@@ -77,11 +76,16 @@ export default class RenderVDOM {
 
           reactiveData = dotReactiveData[0];
 
-          const q = this.componentProps.data[reactiveData];
+          let propsReactiveData = this.componentProps.data[reactiveData];
 
-          const v = Object.values(store).includes(q);
-
-          nodes = reactiveNodes.get(q);
+          if (store) {
+            if (store === propsReactiveData && dotReactiveData[1]) {
+              propsReactiveData = propsReactiveData[dotReactiveData[1]]?.state;
+            } else if (Object.values(store).includes(propsReactiveData)) {
+              propsReactiveData = propsReactiveData?.state;
+            }
+          }
+          nodes = reactiveNodes.get(propsReactiveData);
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
 
@@ -108,11 +112,7 @@ export default class RenderVDOM {
       const textNode = document.createTextNode(reactiveVariable + "");
 
       if (nodes) {
-        nodes.push([
-          PatchNodeType.PATCH_VALUE,
-          textNode,
-          this.componentThreeData.value,
-        ]);
+        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
       }
 
       el.appendChild(textNode);
@@ -169,27 +169,27 @@ export default class RenderVDOM {
         this.componentProps.components
       ).indexOf(vdom.tag);
       if (componentElementIndex !== -1) {
-        vdom.componentId = this.componentId;
+        vdom.componentId = getRandomValue();
 
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
-        if (ifNodes)
+        if (ifNodes) {
+          debugger;
           ifNodes.push([
             PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
-            this.componentThreeData.value,
+            this.componentName,
           ]);
+        }
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
-
-        debugger;
 
         console.log(SPA.components);
 
         SPA.setupComponent(
           this.componentProps?.components[vdom.tag],
           root,
-          this.componentId,
+          vdom.componentId,
           "append",
           this.componentThreeData,
           vdom.props.componentProps as ComponentProps
@@ -239,7 +239,7 @@ export default class RenderVDOM {
         ifNodes.push([
           PatchNodeType.PATCH_IF_NODE,
           vdom.el,
-          this.componentThreeData.value,
+          this.componentName,
         ]);
 
       if (ifReactive?._isRef === true && ifReactive?.value === false) return;
@@ -307,11 +307,7 @@ export default class RenderVDOM {
         return;
       }
 
-      nodes.push([
-        PatchNodeType.PATCH_FOR,
-        vdom.el,
-        this.componentThreeData.value,
-      ]);
+      nodes.push([PatchNodeType.PATCH_FOR, vdom.el, this.componentName]);
 
       return;
     }

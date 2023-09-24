@@ -31,7 +31,7 @@ const App: FnComponent = () => {
 
   const body = /*html*/ `
   <>
-    <h3>Test store text value - {textValue.state.t}</h3>
+    <h3>Test store text value - {textValue.first.state.t}</h3>
     <button @click='changeStoreText'>change text</button>
     <h3>Test dot text value - {testDot}</h3>
     <button @click='changeStoreText2'>change text</button>
@@ -81,7 +81,7 @@ const App: FnComponent = () => {
         changeIf,
         testInc,
         testDec,
-        textValue: store.first,
+        textValue: store,
         changeStoreText,
         changeStoreText2,
       },

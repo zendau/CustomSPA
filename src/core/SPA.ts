@@ -40,45 +40,30 @@ export class SPA {
   ) {
     debugger;
 
-    let componentTheeData: ComponentThree | null;
-
-    if (theeComponent) {
-      componentTheeData = componentController.addComponentToThee(
-        component.name,
-        theeComponent
-      );
-    } else {
-      componentTheeData = componentController.currentNode;
-    }
-
-    if (!componentTheeData) {
-      throw new Error("Error when rendering root element");
-    }
+    const componentTheeData = insertComponentToTree(
+      theeComponent,
+      component.name
+    );
 
     const [body, props] = component(componentProps);
+
+    const parser = new Parser(body.template, props);
+
     const componentName = componentId
       ? `${component.name}:${componentId}`
       : component.name;
 
-    const parser = new Parser(body.template, props);
-
-    const render = new RenderVDOM(componentTheeData, props);
+    const render = new RenderVDOM(
+      componentName,
+      componentId,
+      componentTheeData,
+      props
+    );
     const vdom = parser.genereteVDOM() as IVDOMElement;
 
     render.insertVDOM(vdom, root, type);
 
-    if (body.style) {
-      const styleElement = document.createElement("style");
-
-      const style = body.style.replace(
-        "scoped",
-        `data-c='${render.componentRenderId}'`
-      );
-
-      styleElement.innerHTML = style;
-      styleElement.id = render.componentRenderId;
-      document.head.appendChild(styleElement);
-    }
+    applyStyles(body.style, render.componentRenderId);
 
     if (props?.onBeforeMounted) {
       props.onBeforeMounted();
@@ -88,24 +73,7 @@ export class SPA {
       props.onMounted();
     }
 
-    function setParentComponent(children: IVDOMElement[] | undefined) {
-      if (!children) return;
-
-      if (children.length === 1)
-        return setParentComponent(children[0].children);
-
-      children.forEach((child) => {
-        const component = SPA.components.get(
-          `${child.tag}:${child.componentId}`
-        );
-
-        if (component) {
-          component.vdom.parentComponent = componentName;
-        }
-      });
-    }
-
-    setParentComponent(vdom.children);
+    setParentComponent(vdom.children, componentName);
 
     SPA.components.set(componentName, {
       vdom,
@@ -132,6 +100,8 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
+    debugger;
+
     if (depComputed.has(obj)) {
       const computedValues = depComputed.get(obj);
 
@@ -140,7 +110,6 @@ export class SPA {
           if (!item) continue;
 
           if (item[0] && item[0] === target) {
-            console.log("should update", item[1]());
             SPA.updateNodes(item[1], item[1]());
           }
         }
@@ -252,10 +221,7 @@ export class SPA {
     const router = this.modules.get("router");
 
     if (router && router.currentRoute) {
-      console.log("HAS ROUTER", router);
-
       const route = router.currentRoute;
-
       component = route.component;
     }
 
@@ -274,6 +240,58 @@ export class SPA {
 
     return this;
   }
+}
+
+function insertComponentToTree(
+  theeComponent: ComponentThree | null,
+  componentName: string
+) {
+  let componentTheeData;
+
+  if (theeComponent) {
+    componentTheeData = componentController.addComponentToThee(
+      componentName,
+      theeComponent
+    );
+  } else {
+    componentTheeData = componentController.currentNode;
+  }
+
+  if (!componentTheeData) {
+    throw new Error("Error when rendering root element");
+  }
+
+  return componentTheeData;
+}
+
+function applyStyles(styleData: string | undefined, componentId: string) {
+  if (styleData) {
+    const styleElement = document.createElement("style");
+
+    const style = styleData.replace("scoped", `data-c='${componentId}'`);
+
+    styleElement.innerHTML = style;
+    styleElement.id = componentId;
+    document.head.appendChild(styleElement);
+  }
+}
+
+function setParentComponent(
+  children: IVDOMElement[] | undefined,
+  componentName: string
+) {
+  if (!children) return;
+
+  if (children.length === 1)
+    return setParentComponent(children[0].children, componentName);
+
+  children.forEach((child) => {
+    const component = SPA.components.get(`${child.tag}:${child.componentId}`);
+
+    if (component) {
+      component.vdom.parentComponent = componentName;
+    }
+  });
 }
 
 export const updateNodes = debounce(SPA.updateNodes, 100);

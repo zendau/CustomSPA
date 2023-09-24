@@ -87,7 +87,6 @@ export function reactivity<T extends object>(data: T) {
 
 export function computed<T extends () => any>(fn: T) {
   simpleReactiveVar = [];
-  debugger;
   const resFn = fn();
 
   const resValue: { value: ReturnType<T> } = {

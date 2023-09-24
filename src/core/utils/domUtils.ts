@@ -16,8 +16,10 @@ export function clearNodes(nodes?: IVDOMElement[]) {
         node.el.remove();
       }
     } else {
-      if (SPA.components.has(`${node.tag}:${node.componentId}`)) {
-        const component = SPA.components.get(`${node.tag}:${node.componentId}`);
+      const componentKey = `${node.tag}:${node.componentId}`;
+
+      if (SPA.components.has(componentKey)) {
+        const component = SPA.components.get(componentKey);
 
         if (!component) {
           console.error(`component - ${node} is not found`);
@@ -29,6 +31,8 @@ export function clearNodes(nodes?: IVDOMElement[]) {
         if (component.onUnmounted) {
           component.onUnmounted();
         }
+
+        SPA.components.delete(componentKey);
       }
     }
   });
