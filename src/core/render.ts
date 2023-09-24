@@ -1,16 +1,17 @@
+import { SPA } from "./SPA";
 import { IVDOMElement } from "@core/interfaces/IVDOMElement";
-import { reactiveNodes, reactiveProxy } from "@core/reactivity";
+import { reactiveNodes } from "@core/reactivity";
 import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import { ComponentProps, IComponent } from "@core/interfaces/componentType";
-import removeArrayObject from "./utils/removeArrayObject";
-import getRandomValue from "./utils/getRandomValue";
-import { SPA } from "./SPA";
-import { ComponentThree, inject } from "./ComponentThree";
+import removeArrayObject from "@core/utils/removeArrayObject";
+import getRandomValue from "@core/utils/getRandomValue";
+import { ComponentThree } from "@core/ComponentThree";
+import { inject } from "@core/apiInject";
 
 export default class RenderVDOM {
   private componentProps?: Partial<IComponent>;
   private componentThreeData!: ComponentThree;
-  private componentId!: string;
+  private _componentId!: string;
   private componentName!: string;
 
   constructor(
@@ -22,7 +23,7 @@ export default class RenderVDOM {
     this.componentProps = componentProps;
     this.componentThreeData = componentThreeData;
 
-    this.componentId = componentId ?? "";
+    this._componentId = componentId ?? "";
     this.componentName = componentName;
   }
 
@@ -47,7 +48,6 @@ export default class RenderVDOM {
       if (reactiveData === "children") {
         if (this.componentProps?.data && this.componentProps.data["children"]) {
           const childVDOM = this.componentProps.data["children"];
-          console.log("SLOT VALUE HERE", childVDOM);
 
           this.insertVDOM(childVDOM, el, "append");
         }
@@ -204,7 +204,7 @@ export default class RenderVDOM {
     if (!isEmptyTag) {
       el = document.createElement(vdom.tag);
 
-      el.dataset.c = this.componentId;
+      el.dataset.c = this._componentId;
 
       if (!Array.isArray(vdom.el)) {
         vdom.el = el;
@@ -316,7 +316,7 @@ export default class RenderVDOM {
     }
   }
 
-  get componentRenderId(): string {
-    return this.componentId;
+  get componentId(): string {
+    return this._componentId;
   }
 }

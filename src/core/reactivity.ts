@@ -7,7 +7,7 @@ export const reactiveProxy = new Map<object, object>();
 let simpleReactiveVar: object[] | null = null;
 const depReactiveVar: object[][] = [];
 
-export const depComputed = new Map();
+export const deepComputed = new Map();
 
 function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
   const rootOjb = mainObj || obj;
@@ -97,8 +97,8 @@ export function computed<T extends () => any>(fn: T) {
     depReactiveVar.forEach((item) => {
       const obj = item.shift();
 
-      if (!depComputed.has(obj)) depComputed.set(obj, []);
-      depComputed.get(obj).push([item[0], fn]);
+      if (!deepComputed.has(obj)) deepComputed.set(obj, []);
+      deepComputed.get(obj).push([item[0], fn]);
     });
   }
 

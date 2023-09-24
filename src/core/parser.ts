@@ -190,18 +190,15 @@ export default class Parser {
           -1
       ) {
         if (tagData[0].charAt(tagData[0].length - 1) === "/") {
-          console.log("COMPONENT WITHOUT SLOT");
           this.getComponentProps(tag, vdom);
           roomVDOM.children?.push(vdom);
         } else {
           if (tagData[0].charAt(0) === "/") {
-            console.log("END SLOT");
             return {
               pos: i,
               vdome: roomVDOM,
             };
           } else {
-            console.log("COMPONENT WITH SLOT");
             this.getComponentProps(tag, vdom);
             const slotData = this.HTMLParser(i + 1, tagTitle);
 

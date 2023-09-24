@@ -1,6 +1,7 @@
 import { ref } from "@SPA";
 import { FnComponent } from "../../core/interfaces/componentType";
-import { inject } from "@core/ComponentThree";
+import { inject } from "@core/apiInject";
+
 
 const ThirdComponent: FnComponent = () => {
   const testIf = ref(true);

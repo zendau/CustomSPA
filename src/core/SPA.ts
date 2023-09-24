@@ -6,17 +6,18 @@ import {
 } from "@core/interfaces/componentType";
 import Parser from "@core/Parser";
 import RenderVDOM from "@core/Render";
-import { depComputed, reactiveNodes, reactiveProxy } from "./reactivity";
-import { PatchNodeType, insertVDOMType } from "./interfaces/typeNodes";
+import { deepComputed, reactiveNodes, reactiveProxy } from "@core/reactivity";
+import { PatchNodeType, insertVDOMType } from "@core/interfaces/typeNodes";
 import {
   clearNodes,
   findNeighborVDOMComponent,
   findNeighborVDOMNode,
-} from "./utils/domUtils";
-import debounce from "./utils/debounce";
-import removeArrayObject from "./utils/removeArrayObject";
-import IExternalModule from "./interfaces/IExternalModule";
-import { ComponentThree, componentController } from "./ComponentThree";
+} from "@core/utils/domUtils";
+import debounce from "@core/utils/debounce";
+import removeArrayObject from "@core/utils/removeArrayObject";
+import IExternalModule from "@core/interfaces/IExternalModule";
+import { ComponentThree } from "@core/ComponentThree";
+import { componentController } from "@core/apiInject";
 
 export class SPA {
   public static root: HTMLElement;
@@ -38,8 +39,6 @@ export class SPA {
     theeComponent: ComponentThree | null,
     componentProps?: ComponentProps
   ) {
-    debugger;
-
     const componentTheeData = insertComponentToTree(
       theeComponent,
       component.name
@@ -63,7 +62,7 @@ export class SPA {
 
     render.insertVDOM(vdom, root, type);
 
-    applyStyles(body.style, render.componentRenderId);
+    applyStyles(body.style, render.componentId);
 
     if (props?.onBeforeMounted) {
       props.onBeforeMounted();
@@ -100,21 +99,7 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
-    debugger;
-
-    if (depComputed.has(obj)) {
-      const computedValues = depComputed.get(obj);
-
-      if (computedValues) {
-        for (let item of computedValues) {
-          if (!item) continue;
-
-          if (item[0] && item[0] === target) {
-            SPA.updateNodes(item[1], item[1]());
-          }
-        }
-      }
-    }
+    deepUpdate(obj, target);
 
     const proxy = reactiveProxy.get(obj);
     if (!proxy) {
@@ -140,9 +125,12 @@ export class SPA {
         updatedComponent.onBeforeUpdate();
       }
 
+      // Patch Node value
       if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
         node.data = value;
-      } else if (
+      }
+      // Patch IF Node
+      else if (
         type === PatchNodeType.PATCH_IF_NODE &&
         node instanceof HTMLElement
       ) {
@@ -160,7 +148,9 @@ export class SPA {
             updatedComponent.onUnmounted();
           }
         }
-      } else if (
+      }
+      // Patch IF Component
+      else if (
         type === PatchNodeType.PATCH_IF_COMPONENT &&
         typeof node === "string"
       ) {
@@ -192,14 +182,14 @@ export class SPA {
             component.onUnmounted();
           }
         }
-      } else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
+      }
+      // Patch For Node
+      else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
         node.forEach((item) => item.remove());
 
         const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node[0]);
 
         if (!insertNode) continue;
-
-        console.log("!!!@!@", insertNode, SPA.components);
 
         updatedComponent.rerender(insertNode);
         removeArrayObject(nodes, item);
@@ -292,6 +282,22 @@ function setParentComponent(
       component.vdom.parentComponent = componentName;
     }
   });
+}
+
+function deepUpdate(obj: object, target: object | undefined) {
+  if (deepComputed.has(obj)) {
+    const computedValues = deepComputed.get(obj);
+
+    if (computedValues) {
+      for (let item of computedValues) {
+        if (!item) continue;
+
+        if (item[0] && item[0] === target) {
+          SPA.updateNodes(item[1], item[1]());
+        }
+      }
+    }
+  }
 }
 
 export const updateNodes = debounce(SPA.updateNodes, 100);

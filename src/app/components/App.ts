@@ -3,7 +3,8 @@ import { FnComponent } from "@core/interfaces/componentType";
 import SecondComponent from "@app/components/SecondComponent";
 import { useStore } from "@app/store";
 import { computed } from "@core/reactivity";
-import { provide } from "@core/ComponentThree";
+import { provide } from "@core/apiInject";
+
 
 const App: FnComponent = () => {
   const testRef = ref(2);

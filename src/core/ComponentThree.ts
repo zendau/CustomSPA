@@ -41,7 +41,7 @@ export class ComponentThree {
   }
 }
 
-class ComponentThreeController {
+export class ComponentThreeController {
   private currentComponentNode!: ComponentThree | null;
 
   get currentNode() {
@@ -69,32 +69,3 @@ class ComponentThreeController {
     return component;
   }
 }
-
-export const componentController = new ComponentThreeController();
-
-export function provide(key: string, data: any) {
-  if (!componentController.currentNode) return;
-  componentController.currentNode.addProvideValue(key, data);
-}
-
-export function inject(key: string) {
-  if (!componentController.currentNode) return;
-  return componentController.currentNode.findInjectValue(key);
-}
-
-// const q1 = new ComponentThree("2");
-// q1.addProvideValue("test", "hello world");
-
-// const q2 = new ComponentThree("3");
-// const q2Copy = new ComponentThree("3");
-// const q3 = new ComponentThree("5");
-// const q4 = new ComponentThree("6");
-
-// q1.addNode(q2);
-// q1.addNode(q2Copy);
-// q2.addNode(q3);
-// q3.addNode(q4);
-// console.log(q1);
-
-// const r = q4.findInjectValue("test");
-// console.log("r", r);
