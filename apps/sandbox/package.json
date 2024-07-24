@@ -1,5 +1,5 @@
 {
-  "name": "spaframework",
+  "name": "sandbox",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,8 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/node": "^20.4.8",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "typescript": "^5.2.2",
+    "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "@spa/core": "workspace:^",
+    "@spa/router": "workspace:^",
+    "@spa/store": "workspace:^"
   }
 }
