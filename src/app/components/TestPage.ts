@@ -1,4 +1,4 @@
-import { FnComponent } from "../../core/interfaces/componentType";
+import { FnComponent } from "@SPA";
 import { useRouter } from "@core/libs/router";
 import Link from "@core/libs/router/components/Link";
 

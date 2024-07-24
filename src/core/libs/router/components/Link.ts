@@ -10,14 +10,14 @@ interface ILinkProps {
 const Link: FnComponent<ILinkProps> = ({ to, children }) => {
   const router = useRouter();
 
-  function test(e: MouseEvent) {
+  function onClick(e: MouseEvent) {
     e.preventDefault();
     router.push(to);
   }
 
   const body = `<a @click='test' href="${to}">{children}</a>`;
 
-  return [{ template: body }, { data: { test, children } }];
+  return [{ template: body }, { data: { onClick, children } }];
 };
 
 export default Link;

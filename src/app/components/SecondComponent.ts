@@ -1,5 +1,4 @@
-import { ref, reactivity } from "@SPA";
-import { FnComponent } from "core/interfaces/componentType";
+import { ref, reactivity, FnComponent } from "@SPA";
 import ThirdComponent from "./ThirdComponent";
 
 interface ISecondComponentProps {

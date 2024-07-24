@@ -1,16 +1,12 @@
-import { reactivity, ref } from "@SPA";
-import { FnComponent } from "@core/interfaces/componentType";
+import { reactivity, ref, FnComponent, provide, computed } from "@SPA";
 import SecondComponent from "@app/components/SecondComponent";
 import { useStore } from "@app/store";
-import { computed } from "@core/reactivity";
-import { provide } from "@core/apiInject";
-
 
 const App: FnComponent = () => {
   const testRef = ref(2);
   const testIf = ref(true);
 
-  provide('test', 'hello world')
+  provide("test", "hello world");
 
   const store = useStore();
   // console.log('testRef', testRef)
