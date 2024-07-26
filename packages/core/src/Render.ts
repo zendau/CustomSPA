@@ -32,7 +32,6 @@ export default class RenderVDOM {
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
-    debugger;
     const reactiveRegex = /\{([^}]+)\}/g;
     const store = inject("store");
 

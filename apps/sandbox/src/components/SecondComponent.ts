@@ -3,10 +3,10 @@ import ThirdComponent from "./ThirdComponent";
 
 interface ISecondComponentProps {
   id: number;
-  msg: string
+  msg: string;
 }
 
-const SecondComponent: FnComponent<ISecondComponentProps> = ({id, msg}) => {
+const SecondComponent: FnComponent<ISecondComponentProps> = ({ id, msg }) => {
   const testRef = ref("testQ");
 
   const testFor = reactivity([
@@ -17,14 +17,15 @@ const SecondComponent: FnComponent<ISecondComponentProps> = ({id, msg}) => {
 
   const testReactivity = reactivity({ title: "qwitem 1", count: 2111 });
 
-
   function testInput(e: any) {
-    testRef.value = e.target.value
+    testRef.value = e.target.value;
     // console.log('testRef', testRef)
-    testReactivity.title = e.target.value
-    testReactivity.count++
+    testReactivity.title = e.target.value;
+    testReactivity.count++;
 
-    // testFor.forEach((item: any, index: any) => (item.title = e.target.value + index));
+    testFor.forEach(
+      (item: any, index: any) => (item.title = e.target.value + index)
+    );
   }
 
   function addForValue() {

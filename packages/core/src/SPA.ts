@@ -64,23 +64,23 @@ export class SPA {
     applyStyles(body.style, render.componentId);
 
     if (props?.onBeforeMounted) {
-      props.onBeforeMounted();
+      debounce(props.onBeforeMounted, 100);
     }
 
     if (props?.onMounted) {
-      props.onMounted();
+      debounce(props.onMounted, 100);
     }
 
     setParentComponent(vdom.children, componentName);
 
     SPA.components.set(componentName, {
       vdom,
-      onUpdate: debounce(props?.onUpdate, 0),
-      onBeforeUpdate: debounce(props?.onBeforeUpdate, 0),
-      onUnmounted: debounce(props?.onUnmounted, 0),
+      onUpdate: debounce(props?.onUpdate, 100),
+      onBeforeUpdate: debounce(props?.onBeforeUpdate, 100),
+      onUnmounted: debounce(props?.onUnmounted, 100),
       rerender: (node) => {
         if (props?.onBeforeMounted) {
-          props.onBeforeMounted();
+          debounce(props.onBeforeMounted, 100);
         }
 
         render.insertVDOM(
@@ -89,7 +89,7 @@ export class SPA {
           node.lastNeighborNode[0]
         );
         if (props?.onMounted) {
-          props.onMounted();
+          debounce(props.onMounted, 100);
         }
       },
     });
@@ -98,7 +98,6 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
-    debugger;
     deepUpdate(obj, target);
 
     const proxy = reactiveProxy.get(obj);
@@ -199,6 +198,7 @@ export class SPA {
       }
       // Patch For Node
       else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
+
         node.forEach((item) => item.remove());
 
         const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node[0]);

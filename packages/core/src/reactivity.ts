@@ -20,7 +20,6 @@ function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
       return setStatus;
     },
     get(target, key): any {
-      debugger;
       const main: any = mainObj || target;
       const value = Reflect.get(target, key);
 
