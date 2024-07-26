@@ -1,6 +1,7 @@
 import { reactivity, ref, FnComponent, provide, computed } from "@spa/core";
 import SecondComponent from "@app/components/SecondComponent";
 import { useStore } from "@app/store";
+import { Link } from "@spa/router";
 
 const App: FnComponent = () => {
   const testRef = ref(2);
@@ -28,6 +29,7 @@ const App: FnComponent = () => {
 
   const body = /*html*/ `
   <>
+    <Link to='/test/one/two/three'><p>TEST PAGE</p></Link>
     <h3>Test store text value - {textValue.first.state.t}</h3>
     <button @click='changeStoreText'>change text</button>
     <h3>Test dot text value - {testDot}</h3>
@@ -39,7 +41,11 @@ const App: FnComponent = () => {
     </div>
     <input id='one' @input='testDec'/>
     <input id='two' />
+
+
+
     <button @click='changeIf'>Test if</button>
+
     <SecondComponent if='testIf' msg='test message' :id='testRef'/>
     <h1>END</h1>
 
@@ -69,7 +75,7 @@ const App: FnComponent = () => {
   return [
     { template: body, style },
     {
-      components: { SecondComponent },
+      components: { SecondComponent, Link },
       data: {
         testIf,
         testRef,

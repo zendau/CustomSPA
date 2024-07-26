@@ -8,7 +8,7 @@ const TestPage: FnComponent = () => {
 
   function qqqe() {
     console.log('router', router)
-    router.push("/");
+    router.push("/test/1/2/3/nested/test");
   }
 
   const body = /*html*/`
@@ -20,8 +20,8 @@ const TestPage: FnComponent = () => {
     <p>props: test - {routeProps.test}</p>
     <div>
     <Link to='/'/>
-    <Link to='/'><h1>TEST VALUE</h1></Link>
-    <button @click='qqqe'>push</button>
+    <Link to='/'><h1>To main page</h1></Link>
+    <button @click='qqqe'>push to nested apge</button>
     </div>
 
     </>`;

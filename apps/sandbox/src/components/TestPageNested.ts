@@ -4,18 +4,16 @@ import { useRouter, Link } from "@spa/router";
 const TestPageNested: FnComponent = () => {
   const router = useRouter();
 
-  console.log("router", router);
-
   function test() {
     router.push("/test", { test: "propsQWW@" });
   }
 
-  const body = `
+  const body = /*html*/`
     <>
     <h1>Nested test page</h1>
     <p>param: category - {category}</p>
     <Link to='/test'><h1>Go back route test page</h1></Link>
-    <button @click='test'>push to main page</button>
+    <button @click='test'>push to test page with props</button>
     </div>
 
     </>`;
