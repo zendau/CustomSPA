@@ -27,7 +27,6 @@ export class SPA {
 
   constructor(rootComponent: FnComponent) {
     this.rootComponent = rootComponent;
-
     componentController.addComponentToThee(rootComponent.name, null);
   }
 
@@ -99,6 +98,7 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
+    debugger
     deepUpdate(obj, target);
 
     const proxy = reactiveProxy.get(obj);
@@ -203,7 +203,6 @@ export class SPA {
 
   public mount(root: HTMLElement | null) {
     if (!root) return;
-
     SPA.root = root;
 
     let component = this.rootComponent;
@@ -215,10 +214,10 @@ export class SPA {
       component = route.component;
     }
 
-    debugger
+
     SPA.setupComponent(component, root, null, "append", null);
 
-    componentController.resetCurrentNode();
+    // componentController.resetCurrentNode();
   }
 
   public appProvideData(key: string, data: any) {
@@ -237,7 +236,6 @@ function insertComponentToTree(
   theeComponent: ComponentThree | null,
   componentName: string
 ) {
-  debugger
   let componentTheeData;
 
   if (theeComponent) {
@@ -302,4 +300,5 @@ function deepUpdate(obj: object, target: object | undefined) {
   }
 }
 
+// export const updateNodes = SPA.updateNodes
 export const updateNodes = debounce(SPA.updateNodes, 100);

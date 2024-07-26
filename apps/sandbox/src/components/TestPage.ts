@@ -6,7 +6,7 @@ const TestPage: FnComponent = () => {
 
   console.log("router", router);
 
-  function test() {
+  function qqqe() {
     console.log('router', router)
     router.push("/");
   }
@@ -21,7 +21,7 @@ const TestPage: FnComponent = () => {
     <div>
     <Link to='/'/>
     <Link to='/'><h1>TEST VALUE</h1></Link>
-    <button @click='test'>push</button>
+    <button @click='qqqe'>push</button>
     </div>
 
     </>`;
@@ -30,7 +30,7 @@ const TestPage: FnComponent = () => {
     { template: body },
     {
       data: {
-        test,
+        qqqe,
         id: router.currentRoute.params.id,
         q: router.currentRoute.params.q,
         w: router.currentRoute.params.w,

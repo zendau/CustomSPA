@@ -174,7 +174,6 @@ export default class RenderVDOM {
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
         if (ifNodes) {
-          debugger;
           ifNodes.push([
             PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
@@ -249,10 +248,11 @@ export default class RenderVDOM {
       this.getTagValue(vdom.props.value, el);
     }
 
+
     if (vdom.props.events && this.componentProps?.data) {
       Object.entries(vdom.props.events).forEach(([event, action]) => {
         if (!this.componentProps!.data![action]) {
-          console.error(`not found script action ${action}}`);
+          console.error(`not found script action ${action}`);
         } else {
           el.addEventListener(event, this.componentProps!.data![action]);
         }

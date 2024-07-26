@@ -14,11 +14,13 @@ function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
 
   return new Proxy(obj, {
     set(target, key, value) {
+      debugger;
+      const setStatus = Reflect.set(target, key, value);
       updateNodes(rootOjb, value, target);
-
-      return Reflect.set(target, key, value);
+      return setStatus;
     },
     get(target, key): any {
+      debugger;
       const main: any = mainObj || target;
       const value = Reflect.get(target, key);
 

@@ -3,9 +3,10 @@ import ThirdComponent from "./ThirdComponent";
 
 interface ISecondComponentProps {
   id: number;
+  msg: string
 }
 
-const SecondComponent: FnComponent<ISecondComponentProps> = (test: any) => {
+const SecondComponent: FnComponent<ISecondComponentProps> = ({id, msg}) => {
   const testRef = ref("testQ");
 
   const testFor = reactivity([
@@ -14,14 +15,15 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test: any) => {
     { title: "item 3", count: 3 },
   ]);
 
-  const testReactivity = reactivity({ title: "item 1", count: 1 });
+  const testReactivity = reactivity({ title: "qwitem 1", count: 2111 });
 
-  console.log("1test", test);
 
   function testInput(e: any) {
-    testReactivity.title = e.target.value;
+    testRef.value = e.target.value
+    // console.log('testRef', testRef)
+    testReactivity.count++
 
-    testFor.forEach((item: any, index: any) => (item.title = e.target.value + index));
+    // testFor.forEach((item: any, index: any) => (item.title = e.target.value + index));
   }
 
   function addForValue() {
@@ -35,11 +37,11 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test: any) => {
   const body = `
     <>
       <h1>Hello from second component {id} and {testRef}</h1>
-      <h2>Hello h2</h2>
+      <h2>Hello h2 {msg}</h2>
       <input @input='testInput' />
       <button @click='addForValue'>add for value</button>
       <button @click='deleteForValue'>delete for value</button>
-      <p>test - {testReactivity.title} - ref</p>
+      <p>test - {testReactivity} - ref</p>
 
       <div for="item in testFor" id="test">
         <div>{item.title}</div>
@@ -54,7 +56,8 @@ const SecondComponent: FnComponent<ISecondComponentProps> = (test: any) => {
     { template: body },
     {
       data: {
-        id: test.id,
+        id,
+        msg,
         testRef,
         testFor,
         testReactivity,

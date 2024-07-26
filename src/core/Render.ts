@@ -174,7 +174,6 @@ export default class RenderVDOM {
         let ifNodes = ifReactive ? reactiveNodes.get(ifReactive) : undefined;
 
         if (ifNodes) {
-          debugger;
           ifNodes.push([
             PatchNodeType.PATCH_IF_COMPONENT,
             `${vdom.tag}:${vdom.componentId}`,
