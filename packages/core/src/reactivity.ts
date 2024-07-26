@@ -35,6 +35,12 @@ function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
         return createNestedProxy(value, main);
       }
 
+      if (key === Symbol.toPrimitive && Reflect.get(target, "_isRef")) {
+        return () => JSON.stringify(Reflect.get(target, "value"));
+      } else if (key === Symbol.toPrimitive) {
+        return () => JSON.stringify(target);
+      }
+
       if (
         key !== "value" &&
         Reflect.get(target, "value") &&
