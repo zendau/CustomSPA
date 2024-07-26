@@ -1,0 +1,12 @@
+{
+  "name": "SPA",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm --parallel --filter './apps/*' --stream -r run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
