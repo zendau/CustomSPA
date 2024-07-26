@@ -75,9 +75,9 @@ export class SPA {
 
     SPA.components.set(componentName, {
       vdom,
-      onUpdate: props?.onUpdate,
-      onBeforeUpdate: props?.onBeforeUpdate,
-      onUnmounted: props?.onUnmounted,
+      onUpdate: debounce(props?.onUpdate, 0),
+      onBeforeUpdate: debounce(props?.onBeforeUpdate, 0),
+      onUnmounted: debounce(props?.onUnmounted, 0),
       rerender: (node) => {
         if (props?.onBeforeMounted) {
           props.onBeforeMounted();
@@ -98,7 +98,7 @@ export class SPA {
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
-    debugger
+    debugger;
     deepUpdate(obj, target);
 
     const proxy = reactiveProxy.get(obj);
@@ -114,7 +114,7 @@ export class SPA {
     for (const item of [...nodes]) {
       const [type, node, componentName, reactiveProvider] = item;
 
-      console.log('componentName', componentName)
+      console.log("componentName", componentName);
 
       const updatedComponent = SPA.components.get(componentName);
 
@@ -228,7 +228,6 @@ export class SPA {
       component = route.component;
     }
 
-
     SPA.setupComponent(component, root, null, "append", null);
 
     // componentController.resetCurrentNode();
@@ -314,5 +313,5 @@ function deepUpdate(obj: object, target: object | undefined) {
   }
 }
 
-// export const updateNodes = SPA.updateNodes
-export const updateNodes = debounce(SPA.updateNodes, 100);
+export const updateNodes = SPA.updateNodes;
+// export const updateNodes = debounce(SPA.updateNodes, 100);
