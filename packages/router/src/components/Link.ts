@@ -20,7 +20,7 @@ const Link: FnComponent<ILinkProps> = ({
     router.push(to);
   }
 
-  const body = `<a @click='test' href="${to}">{children}</a>`;
+  const body = `<a @click='onClick' href="${to}">{children}</a>`;
 
   return [{ template: body }, { data: { onClick, children } }];
 };

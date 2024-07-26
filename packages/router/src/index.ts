@@ -82,7 +82,6 @@ export class Router implements IExternalModule {
   }
 
   private replacePage(path: string, props?: Record<string, any>) {
-    debugger
     SPA.components.forEach((component) => {
       if (component.onUnmounted) component.onUnmounted();
     });
