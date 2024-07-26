@@ -112,7 +112,9 @@ export class SPA {
     if (!nodes) return;
 
     for (const item of [...nodes]) {
-      const [type, node, componentName] = item;
+      const [type, node, componentName, reactiveProvider] = item;
+
+      console.log('componentName', componentName)
 
       const updatedComponent = SPA.components.get(componentName);
 
@@ -127,7 +129,19 @@ export class SPA {
 
       // Patch Node value
       if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
-        node.data = value;
+        let updatedReactiveValue = value
+
+        if (reactiveProvider) {
+
+          updatedReactiveValue = reactiveProvider()
+
+          if (Object.prototype.hasOwnProperty.call(updatedReactiveValue, "_root")) {
+            updatedReactiveValue = updatedReactiveValue['_root']()
+          }
+
+        }
+
+        node.data = updatedReactiveValue;
       }
       // Patch IF Node
       else if (

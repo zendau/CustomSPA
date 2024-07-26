@@ -21,6 +21,7 @@ const SecondComponent: FnComponent<ISecondComponentProps> = ({id, msg}) => {
   function testInput(e: any) {
     testRef.value = e.target.value
     // console.log('testRef', testRef)
+    testReactivity.title = e.target.value
     testReactivity.count++
 
     // testFor.forEach((item: any, index: any) => (item.title = e.target.value + index));
@@ -42,6 +43,7 @@ const SecondComponent: FnComponent<ISecondComponentProps> = ({id, msg}) => {
       <button @click='addForValue'>add for value</button>
       <button @click='deleteForValue'>delete for value</button>
       <p>test - {testReactivity} - ref</p>
+      <p>test2 - {testReactivity.count} - ref</p>
 
       <div for="item in testFor" id="test">
         <div>{item.title}</div>

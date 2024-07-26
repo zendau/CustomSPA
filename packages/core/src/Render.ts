@@ -1,7 +1,11 @@
 import { SPA } from "./SPA";
 import { IVDOMElement } from "./interfaces/IVDOMElement";
 import { reactiveNodes } from "./reactivity";
-import { PatchNodeType, insertVDOMType } from "./interfaces/typeNodes";
+import {
+  PatchNodeType,
+  insertVDOMType,
+  reactiveGetter,
+} from "./interfaces/typeNodes";
 import { ComponentProps, IComponent } from "./interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
 import getRandomValue from "./utils/getRandomValue";
@@ -28,6 +32,7 @@ export default class RenderVDOM {
   }
 
   private getTagValue(tagData: string, el: HTMLElement) {
+    debugger;
     const reactiveRegex = /\{([^}]+)\}/g;
     const store = inject("store");
 
@@ -57,6 +62,8 @@ export default class RenderVDOM {
 
       let reactiveVariable: string | undefined = reactiveData;
 
+      let reactiveProvider: reactiveGetter = () => {};
+
       const isReactive = checkReactive.indexOf(reactiveData);
 
       let nodes = null;
@@ -64,7 +71,13 @@ export default class RenderVDOM {
       if (this.componentProps?.data && isReactive !== -1) {
         if (reactiveData.includes(".")) {
           const dotReactiveData = reactiveData.split(".");
-
+          reactiveProvider = () => {
+            if (!this.componentProps?.data) return;
+            return dotReactiveData.reduce(
+              (prev, curr) => prev[curr],
+              this.componentProps.data
+            ) as unknown as string | undefined;
+          };
           try {
             reactiveVariable = dotReactiveData.reduce(
               (prev, curr) => prev[curr],
@@ -88,6 +101,7 @@ export default class RenderVDOM {
           nodes = reactiveNodes.get(propsReactiveData);
         } else {
           reactiveVariable = this.componentProps.data[reactiveData];
+          reactiveProvider = () => this.componentProps?.data?.[reactiveData];
 
           if (
             reactiveVariable &&
@@ -112,7 +126,12 @@ export default class RenderVDOM {
       const textNode = document.createTextNode(reactiveVariable + "");
 
       if (nodes) {
-        nodes.push([PatchNodeType.PATCH_VALUE, textNode, this.componentName]);
+        nodes.push([
+          PatchNodeType.PATCH_VALUE,
+          textNode,
+          this.componentName,
+          reactiveProvider,
+        ]);
       }
 
       el.appendChild(textNode);
@@ -247,7 +266,6 @@ export default class RenderVDOM {
     if (vdom.props.value) {
       this.getTagValue(vdom.props.value, el);
     }
-
 
     if (vdom.props.events && this.componentProps?.data) {
       Object.entries(vdom.props.events).forEach(([event, action]) => {
