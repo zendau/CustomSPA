@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^5.2.2",
     "vite": "^5.3.4"
+  },
+  "dependencies": {
+    "@spa/core": "workspace:^",
+    "@spa/store": "workspace:^"
   }
 }
