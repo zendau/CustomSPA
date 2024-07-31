@@ -12,7 +12,8 @@ export const deepComputed = new Map();
 function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
   const rootOjb = mainObj || obj;
 
-  return new Proxy(obj, {
+  debugger;
+  const proxy = new Proxy(obj, {
     set(target, key, value) {
       debugger;
       const setStatus = Reflect.set(target, key, value);
@@ -60,6 +61,21 @@ function createNestedProxy<T extends object>(obj: T, mainObj?: T): T {
       return value;
     },
   });
+
+  debugger;
+
+  if (reactiveProxy.has(obj)) {
+    const tempProxy = reactiveProxy.get(obj);
+    const tempNodes = reactiveNodes.get(tempProxy!);
+    reactiveNodes.set(proxy, tempNodes!);
+  }
+
+  if (!reactiveProxy.has(obj)) {
+    reactiveNodes.set(proxy, []);
+    reactiveProxy.set(obj, proxy);
+  }
+
+  return proxy;
 }
 
 export function ref<T>(data: T) {
@@ -86,8 +102,6 @@ export function reactivity<T extends object>(data: T) {
   }
 
   const proxy = createNestedProxy(data);
-  reactiveNodes.set(proxy, []);
-  reactiveProxy.set(data, proxy);
 
   return proxy;
 }

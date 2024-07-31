@@ -99,8 +99,9 @@ export class SPA {
 
   public static updateNodes(obj: object, value: any, target?: object) {
     deepUpdate(obj, target);
-
-    const proxy = reactiveProxy.get(obj);
+    debugger;
+    if (!target) return;
+    const proxy = reactiveProxy.get(target);
     if (!proxy) {
       console.error(`proxy object not found ${obj}`);
       return;
@@ -128,16 +129,24 @@ export class SPA {
 
       // Patch Node value
       if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
-        let updatedReactiveValue = value
+        debugger;
+        let updatedReactiveValue = value;
 
-        if (reactiveProvider) {
+        try {
+          if (reactiveProvider) {
+            updatedReactiveValue = reactiveProvider();
 
-          updatedReactiveValue = reactiveProvider()
-
-          if (Object.prototype.hasOwnProperty.call(updatedReactiveValue, "_root")) {
-            updatedReactiveValue = updatedReactiveValue['_root']()
+            if (
+              Object.prototype.hasOwnProperty.call(
+                updatedReactiveValue,
+                "_root"
+              )
+            ) {
+              updatedReactiveValue = updatedReactiveValue["_root"]();
+            }
           }
-
+        } catch (e) {
+          console.log('e', e)
         }
 
         node.data = updatedReactiveValue;
@@ -197,11 +206,26 @@ export class SPA {
         }
       }
       // Patch For Node
-      else if (type === PatchNodeType.PATCH_FOR && Array.isArray(node)) {
+      else if (type === PatchNodeType.PATCH_FOR) {
+        debugger;
 
-        node.forEach((item) => item.remove());
+        let forNode = null;
 
-        const insertNode = findNeighborVDOMNode(updatedComponent.vdom, node[0]);
+        if (Array.isArray(node)) {
+          forNode = node[0];
+          node.forEach((item) => item.remove());
+        } else {
+          forNode = node;
+        }
+
+        const insertNode = findNeighborVDOMNode(
+          updatedComponent.vdom,
+          forNode as any
+        );
+
+        if (Array.isArray(node)) {
+          node.length = 0;
+        }
 
         if (!insertNode) continue;
 

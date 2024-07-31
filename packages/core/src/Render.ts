@@ -5,6 +5,7 @@ import {
   PatchNodeType,
   insertVDOMType,
   reactiveGetter,
+  reactiveNode,
 } from "./interfaces/typeNodes";
 import { ComponentProps, IComponent } from "./interfaces/componentType";
 import removeArrayObject from "./utils/removeArrayObject";
@@ -34,6 +35,8 @@ export default class RenderVDOM {
   private getTagValue(tagData: string, el: HTMLElement) {
     const reactiveRegex = /\{([^}]+)\}/g;
     const store = inject("store");
+
+    debugger;
 
     const checkSplit = tagData.split(reactiveRegex);
 
@@ -70,13 +73,17 @@ export default class RenderVDOM {
       if (this.componentProps?.data && isReactive !== -1) {
         if (reactiveData.includes(".")) {
           const dotReactiveData = reactiveData.split(".");
-          reactiveProvider = () => {
-            if (!this.componentProps?.data) return;
-            return dotReactiveData.reduce(
-              (prev, curr) => prev[curr],
-              this.componentProps.data
-            ) as unknown as string | undefined;
-          };
+          reactiveProvider = (() => {
+            debugger;
+            const test = { ...this.componentProps?.data };
+            return function () {
+              if (!test) return;
+              return dotReactiveData.reduce(
+                (prev, curr) => prev[curr],
+                test
+              ) as unknown as string | undefined;
+            };
+          })();
           try {
             reactiveVariable = dotReactiveData.reduce(
               (prev, curr) => prev[curr],
@@ -112,6 +119,13 @@ export default class RenderVDOM {
           }
         }
       }
+
+      // debugger;
+
+      // if (!nodes) {
+      //   reactiveNodes.set(reactiveVariable as unknown as object, []);
+      //   nodes = reactiveNodes.get(reactiveVariable as unknown as object);
+      // }
 
       if (
         !reactiveVariable &&
@@ -277,18 +291,20 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
+      debugger;
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
       const nodes = reactiveNodes.get(reactiveFor);
+      // const nodes: reactiveNode[] = [];
 
-      if (nodes) {
-        const removeNode = nodes.find((node) => node[1] === vdom.el);
+      // if (nodes) {
+      //   const removeNode = nodes.find((node) => node[1] === vdom.el);
 
-        if (removeNode) {
-          removeArrayObject(nodes, removeNode);
-        }
-      }
+      //   if (removeNode) {
+      //     removeArrayObject(nodes, removeNode);
+      //   }
+      // }
 
       const createdForNodes: HTMLElement[] = [];
 
@@ -325,6 +341,7 @@ export default class RenderVDOM {
       }
 
       nodes.push([PatchNodeType.PATCH_FOR, vdom.el, this.componentName]);
+      // reactiveNodes.set(reactiveFor, nodes)
 
       return;
     }
