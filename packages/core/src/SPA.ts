@@ -94,8 +94,6 @@ export class SPA {
         }
       },
     });
-
-    console.log(SPA.components);
   }
 
   public static updateNodes(obj: object, value: any, target?: object) {
@@ -113,8 +111,6 @@ export class SPA {
 
     for (const item of [...nodes]) {
       const [type, node, componentName, reactiveProvider] = item;
-
-      console.log("componentName", componentName);
 
       const updatedComponent = SPA.components.get(componentName);
 

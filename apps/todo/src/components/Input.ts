@@ -14,7 +14,7 @@ const Input: FnComponent = () => {
   function onInputAdd() {
     if (!todoEl.value || !todoEl.value.value) return;
 
-    store.todo.actions.add({ title: todoEl.value.value });
+    store.todo.actions.add(todoEl.value.value);
 
     todoEl.value.value = "";
 

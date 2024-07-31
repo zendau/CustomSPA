@@ -1,19 +1,19 @@
 import { createModule } from "@spa/store";
 
 interface IState {
-  todo: string[];
+  list: string[];
 }
 
-const state: any = {
-  todo: [{title: 'one'}, {title: 'two'}],
+const state: IState = {
+  list: ["one", "two"],
 };
 
 const actions = {
   add(store: { state: IState }, text: any) {
-    store.state.todo.push(text);
+    store.state.list.push(text);
   },
   delete(store: { state: IState }, index: number) {
-    store.state.todo.splice(index, 1);
+    store.state.list.splice(index, 1);
   },
 };
 

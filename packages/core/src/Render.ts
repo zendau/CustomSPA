@@ -36,7 +36,7 @@ export default class RenderVDOM {
     const reactiveRegex = /\{([^}]+)\}/g;
     const store = inject("store");
 
-    debugger;
+    // debugger;
 
     const checkSplit = tagData.split(reactiveRegex);
 
@@ -207,9 +207,6 @@ export default class RenderVDOM {
         }
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
-
-        console.log(SPA.components);
-
         const checkReactionProps = () => {
           debugger;
           const props = vdom.props.componentProps;
@@ -225,6 +222,10 @@ export default class RenderVDOM {
               t[key] = this.componentProps?.data![propValue];
             }
           });
+
+          if (this.componentProps!.data!.hasOwnProperty("key")) {
+            t["key"] = this.componentProps.data["key"];
+          }
 
           return t;
         };
@@ -305,7 +306,7 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
-      root.childNodes[0].remove();
+      root.childNodes[root.childNodes.length - 1].remove();
       debugger;
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
@@ -325,7 +326,7 @@ export default class RenderVDOM {
 
       // if (!reactiveFor) return
 
-      reactiveFor.forEach((data: any) => {
+      reactiveFor.forEach((data: any, index: number) => {
         if (vdom.children && vdom.children.length > 0) {
           const forNode = el.cloneNode() as HTMLElement;
 
@@ -337,6 +338,7 @@ export default class RenderVDOM {
           vdom.children.forEach((child) => {
             debugger;
             this.componentProps!.data![key] = data;
+            this.componentProps!.data!["key"] = index;
             this.render(child, forNode);
           });
 
