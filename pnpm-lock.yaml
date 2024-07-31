@@ -27,6 +27,25 @@ importers:
         specifier: ^5.3.4
         version: 5.3.4(@types/node@20.14.12)
 
+  apps/template:
+    dependencies:
+      '@spa/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@spa/router':
+        specifier: workspace:^
+        version: link:../../packages/router
+      '@spa/store':
+        specifier: workspace:^
+        version: link:../../packages/store
+    devDependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.5.4
+      vite:
+        specifier: ^5.3.4
+        version: 5.3.4(@types/node@20.14.12)
+
   apps/todo:
     dependencies:
       '@spa/core':

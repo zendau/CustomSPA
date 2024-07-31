@@ -8,8 +8,9 @@ const List: FnComponent = () => {
 
   const body = /*html*/ `
   <>
-    <h1>Count: {test.length}</h1>
-    <div for="item in test">
+    <h1>Count: {list.length}</h1>
+
+    <div for="item in list">
       <Item :todo='item' />
     </div>
     <hr />
@@ -22,7 +23,7 @@ const List: FnComponent = () => {
     { template: body, style },
     {
       data: {
-        test: store.todo.state.list,
+        list: store.todo.state.list,
         store,
       },
       components: { Input, Item },
