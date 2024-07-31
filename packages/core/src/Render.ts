@@ -210,13 +210,34 @@ export default class RenderVDOM {
 
         console.log(SPA.components);
 
+        const checkReactionProps = () => {
+          debugger;
+          const props = vdom.props.componentProps;
+
+          const t: any = {};
+
+          if (!props || !this.componentProps?.data) return;
+
+          Object.keys(props).forEach((key) => {
+            const propValue = props[key];
+
+            if (this.componentProps!.data!.hasOwnProperty(propValue)) {
+              t[key] = this.componentProps?.data![propValue];
+            }
+          });
+
+          return t;
+        };
+
+        const props = checkReactionProps();
+
         SPA.setupComponent(
           this.componentProps?.components[vdom.tag],
           root,
           vdom.componentId,
           "append",
           this.componentThreeData,
-          vdom.props.componentProps as ComponentProps
+          props as ComponentProps
         );
 
         return;
@@ -302,6 +323,8 @@ export default class RenderVDOM {
 
       const createdForNodes: HTMLElement[] = [];
 
+      // if (!reactiveFor) return
+
       reactiveFor.forEach((data: any) => {
         if (vdom.children && vdom.children.length > 0) {
           const forNode = el.cloneNode() as HTMLElement;
@@ -311,9 +334,11 @@ export default class RenderVDOM {
           if (!this.componentProps) this.componentProps = { data: {} };
           if (!this.componentProps.data) this.componentProps.data = {};
 
-          this.componentProps.data[key] = data;
-
-          vdom.children.forEach((child) => this.render(child, forNode));
+          vdom.children.forEach((child) => {
+            debugger;
+            this.componentProps!.data![key] = data;
+            this.render(child, forNode);
+          });
 
           createdForNodes.push(forNode);
 

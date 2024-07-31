@@ -43,6 +43,7 @@ export class SPA {
       component.name
     );
 
+    debugger
     const [body, props] = component(componentProps);
 
     const parser = new Parser(body.template, props);

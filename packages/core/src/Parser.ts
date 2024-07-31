@@ -140,12 +140,13 @@ export default class Parser {
       if (key.charAt(0) === ":") {
         const newKey = key.substring(1, key.length);
 
-        if (!this.componentProps?.data || !this.componentProps.data[value]) {
-          console.error(`unknown props ${value} in ${componentTag}`);
-          return;
-        }
+        // if (!this.componentProps?.data || !this.componentProps.data[value]) {
+        //   console.error(`unknown props ${value} in ${componentTag}`);
+        //   return;
+        // }
 
-        vdom.props.componentProps[newKey] = this.componentProps.data[value];
+        // vdom.props.componentProps[newKey] = this.componentProps.data[value];
+        vdom.props.componentProps[newKey] = value;
 
         continue;
       }
