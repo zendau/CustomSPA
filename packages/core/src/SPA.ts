@@ -146,7 +146,7 @@ export class SPA {
             }
           }
         } catch (e) {
-          console.log('e', e)
+          console.log("e", e);
         }
 
         node.data = updatedReactiveValue;
@@ -223,9 +223,9 @@ export class SPA {
           forNode as any
         );
 
-        if (Array.isArray(node)) {
-          node.length = 0;
-        }
+        // if (Array.isArray(node) && Array.length > 1) {
+        //   node.length = 0;
+        // }
 
         if (!insertNode) continue;
 
