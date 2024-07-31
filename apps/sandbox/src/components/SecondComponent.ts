@@ -39,8 +39,8 @@ const SecondComponent: FnComponent<ISecondComponentProps> = ({ id, msg }) => {
 
   const body = `
     <>
-      <h1>Hello from second component {id} and {testRef}</h1>
       <h2>Hello h2 {msg}</h2>
+      <h1>Hello from second component {id} and {testRef}</h1>
       <input @input='testInput' />
       <button @click='addForValue'>add for value</button>
       <button @click='deleteForValue'>delete for value</button>

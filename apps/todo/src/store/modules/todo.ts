@@ -4,12 +4,12 @@ interface IState {
   todo: string[];
 }
 
-const state: IState = {
-  todo: [],
+const state: any = {
+  todo: [{title: 'one'}, {title: 'two'}],
 };
 
 const actions = {
-  add(store: { state: IState }, text: string) {
+  add(store: { state: IState }, text: any) {
     store.state.todo.push(text);
   },
   delete(store: { state: IState }, index: number) {

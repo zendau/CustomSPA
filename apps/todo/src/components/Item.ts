@@ -1,7 +1,11 @@
 import { ref, FnComponent } from "@spa/core";
 import { useStore } from "@app/store";
 
-const Item: FnComponent = () => {
+interface IProps {
+  todo: string;
+}
+
+const Item: FnComponent<IProps> = ({ todo }) => {
   const store = useStore();
 
   const todoValue = ref("");
@@ -21,6 +25,7 @@ const Item: FnComponent = () => {
   const body = /*html*/ `
   <>
     <h1>Hello</h1>
+    <p>{todo.title}</p>
   </>`;
 
   const style = /*css*/ `
@@ -30,6 +35,7 @@ const Item: FnComponent = () => {
     { template: body, style },
     {
       data: {
+        todo,
         onInputValue,
         onInputAdd,
       },

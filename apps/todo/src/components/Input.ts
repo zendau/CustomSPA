@@ -4,18 +4,21 @@ import { useStore } from "@app/store";
 const Input: FnComponent = () => {
   const store = useStore();
 
-  const todoValue = ref("");
+  const todoEl = ref<HTMLInputElement | null>(null);
 
-  function onInputValue(e: any) {
-    todoValue.value = e.target.value;
+  function onInputValue(e: Event) {
+    if (todoEl.value) return;
+    todoEl.value = e.target as HTMLInputElement;
   }
 
   function onInputAdd() {
-    if (!todoValue.value.length) return;
+    if (!todoEl.value || !todoEl.value.value) return;
 
-    store.todo.actions.add(todoValue.value);
+    store.todo.actions.add({ title: todoEl.value.value });
 
-    todoValue.value = "";
+    todoEl.value.value = "";
+
+    todoEl.value = null;
   }
 
   const body = /*html*/ `

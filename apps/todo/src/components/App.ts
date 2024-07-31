@@ -6,19 +6,19 @@ import Item from "./Item";
 const App: FnComponent = () => {
   const store = useStore();
 
-  // const test = reactivity(store.todo.state.todo)
-
   const body = /*html*/ `
   <>
     <h1>Hello world</h1>
-    <p> {test} </p>
+    <h1>Hello world</h1>
 
-    <div for="item in test" id="test">
-      <Item />
+    <div for="item in test">
+      <Item :todo='item' />
     </div>
 
 
+
     <Input />
+    <p>dasds</p>
   </>`;
 
   const style = /*css*/ `

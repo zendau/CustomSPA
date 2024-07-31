@@ -25,6 +25,7 @@ const App: FnComponent = () => {
 
   function changeStoreText2() {
     testRef2.number.test++;
+    testRef.value++
   }
 
   const body = /*html*/ `
@@ -33,7 +34,7 @@ const App: FnComponent = () => {
     <h3>Test store text value - {textValue.first.state.t}</h3>
     <button @click='changeStoreText'>change text</button>
     <h3>Test dot text value - {testDot}</h3>
-    <button @click='changeStoreText2'>change text</button>
+    <button @click='changeStoreText2'>change text2</button>
     <p class='box find'>{testRef}</p>
     <div>
     <button id='test' @click='testInc'>Inc</button>
