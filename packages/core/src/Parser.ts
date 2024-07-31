@@ -110,7 +110,6 @@ export default class Parser {
       }
 
       if (atr.includes("href")) {
-        console.log("HREF", atr);
         const atrValue = atr.split("=");
         vdom.props.href = atrValue[1].replace(/["']/g, "");
       }

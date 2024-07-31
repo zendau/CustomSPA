@@ -36,8 +36,6 @@ export default class RenderVDOM {
     const reactiveRegex = /\{([^}]+)\}/g;
     const store = inject("store");
 
-    // debugger;
-
     const checkSplit = tagData.split(reactiveRegex);
 
     if (checkSplit.length === 1) {
@@ -150,9 +148,8 @@ export default class RenderVDOM {
   ) {
     const tempContainer = document.createElement("div");
 
-    debugger;
     this.render(vdom, tempContainer);
-    debugger;
+
     if (type === "append") {
       Array.from(tempContainer.children).forEach((child) =>
         node.appendChild(child)
@@ -171,7 +168,6 @@ export default class RenderVDOM {
       }
     } else if (type === "replace") {
       node.replaceChildren(...tempContainer.children);
-      console.log("REPLACE", node, tempContainer);
     }
   }
 
@@ -208,10 +204,9 @@ export default class RenderVDOM {
 
         if (ifReactive?._isRef === true && ifReactive?.value === false) return;
         const checkReactionProps = () => {
-          debugger;
           const props = vdom.props.componentProps;
 
-          const t: any = {};
+          const newProps: any = {};
 
           if (!props || !this.componentProps?.data) return;
 
@@ -219,15 +214,15 @@ export default class RenderVDOM {
             const propValue = props[key];
 
             if (this.componentProps!.data!.hasOwnProperty(propValue)) {
-              t[key] = this.componentProps?.data![propValue];
+              newProps[key] = this.componentProps?.data![propValue];
             }
           });
 
           if (this.componentProps!.data!.hasOwnProperty("key")) {
-            t["key"] = this.componentProps.data["key"];
+            newProps["key"] = this.componentProps.data["key"];
           }
 
-          return t;
+          return newProps;
         };
 
         const props = checkReactionProps();
@@ -307,24 +302,14 @@ export default class RenderVDOM {
 
     if (vdom.props.for) {
       root.childNodes[root.childNodes.length - 1].remove();
-      debugger;
+
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
 
       const nodes = reactiveNodes.get(reactiveFor);
-      // const nodes: reactiveNode[] = [];
-
-      // if (nodes) {
-      //   const removeNode = nodes.find((node) => node[1] === vdom.el);
-
-      //   if (removeNode) {
-      //     removeArrayObject(nodes, removeNode);
-      //   }
-      // }
 
       const createdForNodes: HTMLElement[] = [];
 
-      // if (!reactiveFor) return
 
       reactiveFor.forEach((data: any, index: number) => {
         if (vdom.children && vdom.children.length > 0) {
@@ -336,7 +321,6 @@ export default class RenderVDOM {
           if (!this.componentProps.data) this.componentProps.data = {};
 
           vdom.children.forEach((child) => {
-            debugger;
             this.componentProps!.data![key] = data;
             this.componentProps!.data!["key"] = index;
             this.render(child, forNode);
@@ -349,7 +333,6 @@ export default class RenderVDOM {
           delete this.componentProps.data[key];
         }
       });
-      debugger;
       if (createdForNodes.length > 0) {
         vdom.el = createdForNodes;
       }
@@ -362,7 +345,6 @@ export default class RenderVDOM {
       }
 
       nodes.push([PatchNodeType.PATCH_FOR, vdom.el, this.componentName]);
-      // reactiveNodes.set(reactiveFor, nodes)
 
       return;
     }

@@ -109,8 +109,6 @@ export class Router implements IExternalModule {
   }
 
   private changeState(e: PopStateEvent) {
-    console.log("changeState", e, window.location.pathname);
-
     const { pathname } = window.location;
 
     if (pathname === this.currentRoute.path) return;

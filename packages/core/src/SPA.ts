@@ -43,7 +43,6 @@ export class SPA {
       component.name
     );
 
-    debugger
     const [body, props] = component(componentProps);
 
     const parser = new Parser(body.template, props);
@@ -98,7 +97,6 @@ export class SPA {
 
   public static updateNodes(obj: object, value: any, target?: object) {
     deepUpdate(obj, target);
-    debugger;
     const proxy = reactiveProxy.get(target ?? obj);
     if (!proxy) {
       console.error(`proxy object not found ${obj}`);
@@ -125,7 +123,7 @@ export class SPA {
 
       // Patch Node value
       if (type === PatchNodeType.PATCH_VALUE && node instanceof Text) {
-        debugger;
+
         let updatedReactiveValue = value;
 
         try {
@@ -203,7 +201,6 @@ export class SPA {
       }
       // Patch For Node
       else if (type === PatchNodeType.PATCH_FOR) {
-        debugger;
 
         let forNode = null;
 
@@ -218,10 +215,6 @@ export class SPA {
           updatedComponent.vdom,
           forNode as any
         );
-
-        // if (Array.isArray(node) && Array.length > 1) {
-        //   node.length = 0;
-        // }
 
         if (!insertNode) continue;
 
@@ -249,8 +242,6 @@ export class SPA {
     }
 
     SPA.setupComponent(component, root, null, "append", null);
-
-    // componentController.resetCurrentNode();
   }
 
   public appProvideData(key: string, data: any) {
@@ -334,4 +325,3 @@ function deepUpdate(obj: object, target: object | undefined) {
 }
 
 export const updateNodes = SPA.updateNodes;
-// export const updateNodes = debounce(SPA.updateNodes, 100);
