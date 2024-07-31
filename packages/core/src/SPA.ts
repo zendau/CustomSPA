@@ -100,8 +100,7 @@ export class SPA {
   public static updateNodes(obj: object, value: any, target?: object) {
     deepUpdate(obj, target);
     debugger;
-    if (!target) return;
-    const proxy = reactiveProxy.get(target);
+    const proxy = reactiveProxy.get(target ?? obj);
     if (!proxy) {
       console.error(`proxy object not found ${obj}`);
       return;
