@@ -74,7 +74,6 @@ export default class RenderVDOM {
         if (reactiveData.includes(".")) {
           const dotReactiveData = reactiveData.split(".");
           reactiveProvider = (() => {
-            debugger;
             const test = { ...this.componentProps?.data };
             return function () {
               if (!test) return;
@@ -120,13 +119,6 @@ export default class RenderVDOM {
         }
       }
 
-      // debugger;
-
-      // if (!nodes) {
-      //   reactiveNodes.set(reactiveVariable as unknown as object, []);
-      //   nodes = reactiveNodes.get(reactiveVariable as unknown as object);
-      // }
-
       if (
         !reactiveVariable &&
         this.componentProps?.data &&
@@ -158,8 +150,9 @@ export default class RenderVDOM {
   ) {
     const tempContainer = document.createElement("div");
 
+    debugger;
     this.render(vdom, tempContainer);
-
+    debugger;
     if (type === "append") {
       Array.from(tempContainer.children).forEach((child) =>
         node.appendChild(child)
@@ -291,6 +284,7 @@ export default class RenderVDOM {
     }
 
     if (vdom.props.for) {
+      root.childNodes[0].remove();
       debugger;
       const reactiveFor =
         this.componentProps?.data![vdom.props.for.at(-1) as string];
@@ -328,7 +322,7 @@ export default class RenderVDOM {
           delete this.componentProps.data[key];
         }
       });
-
+      debugger;
       if (createdForNodes.length > 0) {
         vdom.el = createdForNodes;
       }

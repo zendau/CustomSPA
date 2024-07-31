@@ -29,7 +29,8 @@ const SecondComponent: FnComponent<ISecondComponentProps> = ({ id, msg }) => {
   }
 
   function addForValue() {
-    testFor.push({ title: "item", count: 1 });
+    const t = new Date().getMilliseconds();
+    testFor.push({ title: t.toString(), count: 1 });
   }
 
   function deleteForValue() {
